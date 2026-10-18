@@ -207,6 +207,26 @@ they work together, and CI proves a clean install works for someone else.
 Not deployed; the brief asks only how to run the project.
 **Why:** a one-command local run plus green CI is what a reviewer needs.
 
+## Tooling
+
+### D20. Newest versions that work together
+
+Recorded by the orchestrator on 2026-10-18, after the scaffolder reported
+peer conflicts with npm's `latest` tags. Every catalog entry is the newest
+stable release that satisfies the declared peer ranges of the other entries:
+
+- `typescript` 6.0.x, not 7.x: `typescript-eslint` 8 supports
+  `>=4.8.4 <6.1.0`, and TypeScript 7 has no JavaScript compiler API for
+  type-checked linting.
+- `eslint` and `@eslint/js` 9.x, not 10.x: `eslint-plugin-jsx-a11y` 6.10
+  declares ESLint up to `^9`.
+- `axe-core` is also a root dev dependency, because the shared
+  `expectNoAxeViolations` helper lives at the root (shared tooling lives in
+  the root `devDependencies`).
+
+**Why:** type-checked linting and the accessibility lint rules are
+requirements; a newer compiler or linter is not.
+
 ## Open questions (for the README)
 
 - Which total is correct where a parent and its children disagree, and who
