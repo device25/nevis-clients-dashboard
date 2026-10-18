@@ -1,0 +1,16 @@
+@use '../tokens/mixins' as m;
+
+.chevron {
+  display: block;
+  flex: none;
+  color: var(--color-content-primary);
+  transition: transform 120ms ease-out;
+
+  &[data-expanded='true'] {
+    transform: rotate(90deg);
+  }
+
+  @include m.reduced-motion {
+    transition: none;
+  }
+}

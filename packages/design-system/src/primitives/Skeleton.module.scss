@@ -1,0 +1,187 @@
+@use '../tokens/geometry' as g;
+@use '../tokens/mixins' as m;
+
+// 150ms of delay with the first frame held at opacity 0 means a response that
+// arrives within 150ms never shows the skeleton at all.
+.fade {
+  width: 100%;
+  animation: fade-in 200ms ease-out 150ms backwards;
+
+  @include m.reduced-motion {
+    animation: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.block {
+  background: var(--color-line-solid);
+}
+
+// Chart card ---------------------------------------------------------------
+
+.chartStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.caption {
+  @extend .block;
+  width: 40%;
+  height: g.$chart-label-height;
+  border-radius: var(--radius-bar);
+}
+
+// The plot reproduces the geometry of StackedBarChart. Its size is queried on
+// the plot itself, like the chart measures itself, not on the viewport.
+.plot {
+  --axis: #{g.$chart-axis-width};
+  --axis-gap: 12px;
+  --bar-gap: 24px;
+  --bar-padding: 12px;
+  --grid-height: 320px;
+  --label-height: #{g.$chart-label-height};
+
+  container-type: inline-size;
+  position: relative;
+  height: g.$chart-plot-height;
+
+  @container (max-width: #{g.$narrow-chart - 1px}) {
+    --axis: #{g.$chart-narrow-axis-width};
+    --axis-gap: 4px;
+    --bar-gap: 4px;
+    --bar-padding: 0px;
+    --grid-height: 166px;
+    --label-height: 32px;
+  }
+}
+
+.yAxis {
+  position: absolute;
+  top: calc(#{g.$chart-top} - 4px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: var(--axis);
+  height: calc(var(--grid-height) + 8px);
+}
+
+.yLabel {
+  @extend .block;
+  width: 18px;
+  height: 8px;
+  border-radius: var(--radius-swatch);
+}
+
+.grid {
+  position: absolute;
+  top: g.$chart-top;
+  right: 0;
+  left: calc(var(--axis) + var(--axis-gap));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: var(--grid-height);
+}
+
+.gridLine {
+  @extend .block;
+  height: 1px;
+}
+
+.bars {
+  position: absolute;
+  top: g.$chart-top;
+  right: 0;
+  left: calc(var(--axis) + var(--axis-gap));
+  display: flex;
+  gap: var(--bar-gap);
+  height: var(--grid-height);
+  padding-inline: var(--bar-padding);
+}
+
+.bar {
+  @extend .block;
+  flex: 1;
+  border-radius: var(--radius-bar);
+}
+
+.xLabels {
+  position: absolute;
+  top: calc(#{g.$chart-top} + var(--grid-height) + #{g.$chart-label-gap});
+  right: 0;
+  left: calc(var(--axis) + var(--axis-gap));
+  display: flex;
+  gap: var(--bar-gap);
+  height: var(--label-height);
+  padding-inline: var(--bar-padding);
+}
+
+.xLabel {
+  @extend .block;
+  flex: 1;
+  height: 8px;
+  margin-block: 4px auto;
+  border-radius: var(--radius-swatch);
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  align-items: center;
+  height: 16px;
+}
+
+.legendItem {
+  @extend .block;
+  width: 64px;
+  height: 8px;
+  border-radius: var(--radius-swatch);
+}
+
+// Table card ---------------------------------------------------------------
+
+.table {
+  width: 100%;
+  overflow: hidden;
+}
+
+.row,
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: max-content;
+  min-width: 100%;
+  height: g.$row-height;
+  padding: 0 var(--space-5) 0 var(--space-4);
+  border-bottom: 1px solid var(--color-line-solid);
+}
+
+.nameCell {
+  @extend .block;
+  flex: none;
+  width: g.$name-column;
+  height: 12px;
+  border-radius: var(--radius-swatch);
+
+  @include m.narrow {
+    width: g.$narrow-name-column;
+  }
+}
+
+.monthCell {
+  @extend .block;
+  flex: none;
+  width: g.$month-column;
+  height: 12px;
+  border-radius: var(--radius-swatch);
+}

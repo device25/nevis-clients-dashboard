@@ -1,0 +1,37 @@
+@use '../tokens/mixins' as m;
+
+.text {
+  margin: 0;
+}
+
+.body {
+  @include m.font-body;
+}
+
+.footnote {
+  @include m.font-footnote;
+}
+
+.primary {
+  color: var(--color-content-primary);
+}
+
+.secondary {
+  color: var(--color-content-secondary);
+}
+
+.warning {
+  color: var(--color-warning);
+}
+
+.alignStart {
+  text-align: start;
+}
+
+.alignCenter {
+  text-align: center;
+}
+
+.alignEnd {
+  text-align: end;
+}

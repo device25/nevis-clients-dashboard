@@ -1,0 +1,5 @@
+@use '../tokens/mixins' as m;
+
+.hidden {
+  @include m.visually-hidden;
+}
