@@ -1,18 +1,13 @@
-import { useState } from 'react';
+import { DataProvider } from '@nevis/data';
+import { ClientsPage } from '#ui';
+import { RootErrorBoundary } from './RootErrorBoundary';
 
 export function App() {
-  const [count, setCount] = useState(0);
   return (
-    <main>
-      <h1>Clients</h1>
-      <button
-        type="button"
-        onClick={() => {
-          setCount(count + 1);
-        }}
-      >
-        Clicked {count} times
-      </button>
-    </main>
+    <RootErrorBoundary>
+      <DataProvider>
+        <ClientsPage />
+      </DataProvider>
+    </RootErrorBoundary>
   );
 }

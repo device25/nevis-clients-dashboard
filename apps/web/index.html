@@ -4,10 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Clients</title>
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="./node_modules/@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2"
+    />
     <style>
+      /* The page shell (D16): the background and the heading paint before
+         JavaScript runs, with the metrics of the real heading so that nothing
+         moves when it takes over. Values mirror the design tokens. */
       body {
         margin: 0;
         background: #f7f5ed;
+        color: #141413;
+      }
+      h1 {
+        margin: 0;
+        padding: 24px 16px;
+        font:
+          400 35px/1.25 'Inter Variable',
+          Inter,
+          system-ui,
+          sans-serif;
+        font-optical-sizing: auto;
+      }
+      @media (max-width: 639px) {
+        h1 {
+          padding-inline: 12px;
+          font-size: 28px;
+        }
       }
     </style>
   </head>
