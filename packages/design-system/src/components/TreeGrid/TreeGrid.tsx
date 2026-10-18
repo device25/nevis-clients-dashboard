@@ -1,6 +1,17 @@
-import { useId, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FocusEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { cx } from '#tokens';
 import { Chevron, VisuallyHidden } from '#primitives';
+import { isGridKey, keyAction } from './keyboard';
 import {
   parentIds,
   resolvePosition,
@@ -103,7 +114,9 @@ export function TreeGrid<T>({
   describeCell,
   labelledBy,
   expandedIds,
+  onExpandedChange,
   selectedId,
+  onSelect,
 }: TreeGridProps<T>) {
   const access = { getId, getChildren };
   const rows = visibleRows(root, access, expandedIds);
@@ -125,6 +138,120 @@ export function TreeGrid<T>({
   const tabIndex = (rowId: string, column: number | null) =>
     position.rowId === rowId && position.column === column ? 0 : -1;
 
+  const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+  // The grid element that last received focus, until focus leaves the grid.
+  const lastFocused = useRef<Element | null>(null);
+
+  function elementAt({ rowId, column }: GridPosition): HTMLElement | null {
+    const rowElement = rowElements.current.get(rowId);
+    if (rowElement === undefined) return null;
+    return column === null ? rowElement : rowElement.cells.item(column);
+  }
+
+  function positionOf(target: EventTarget): GridPosition | null {
+    const isCell = target instanceof HTMLTableCellElement;
+    const rowElement = isCell ? target.parentElement : target;
+    for (const [rowId, element] of rowElements.current) {
+      if (element === rowElement) {
+        return { rowId, column: isCell ? target.cellIndex : null };
+      }
+    }
+    return null;
+  }
+
+  function moveFocus(target: GridPosition) {
+    const element = elementAt(target);
+    if (element === null) return;
+    // The scroll is explicit so that it stays minimal ('nearest') and honours
+    // the container's scroll padding under the sticky column.
+    element.focus({ preventScroll: true });
+    element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  function setExpanded(rowId: string, expanded: boolean) {
+    const next = new Set(expandedIds);
+    if (expanded) next.add(rowId);
+    else next.delete(rowId);
+    onExpandedChange(next);
+  }
+
+  // When a collapse removes the focused row or cell, the browser drops focus
+  // to the body; give it to the row that took the tab stop (the collapsed
+  // ancestor). Runs after every commit because the collapse may come from
+  // outside the grid, through `expandedIds`.
+  useEffect(() => {
+    const last = lastFocused.current;
+    if (last === null || last.isConnected) return;
+    lastFocused.current = null;
+    const active = document.activeElement;
+    if (active !== null && active !== document.body) return;
+    moveFocus(position);
+  });
+
+  function handleFocus(event: FocusEvent<HTMLTableElement>) {
+    lastFocused.current = event.target;
+    const focused = positionOf(event.target);
+    if (focused !== null && !samePosition(focused, storedPosition)) {
+      setStoredPosition(focused);
+    }
+  }
+
+  function handleBlur(event: FocusEvent<HTMLTableElement>) {
+    const next = event.relatedTarget;
+    if (next instanceof Node && event.currentTarget.contains(next)) return;
+    const left = event.target;
+    // Some browsers fire blur while removing the focused element. Only a blur
+    // that leaves a connected element behind means the user moved focus away.
+    queueMicrotask(() => {
+      if (left.isConnected && lastFocused.current === left) {
+        lastFocused.current = null;
+      }
+    });
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLTableElement>) {
+    const { key, ctrlKey, altKey, metaKey } = event;
+    const from = positionOf(event.target) ?? position;
+    const action = keyAction(
+      { key, ctrlKey, altKey, metaKey },
+      from,
+      rows,
+      columns.length,
+    );
+    const owned =
+      !altKey &&
+      !metaKey &&
+      (ctrlKey ? key === 'Home' || key === 'End' : isGridKey(key));
+    if (owned) event.preventDefault();
+    if (action === null) return;
+    switch (action.type) {
+      case 'focus':
+        moveFocus(action.position);
+        break;
+      case 'expand':
+        setExpanded(action.rowId, true);
+        break;
+      case 'collapse':
+        setExpanded(action.rowId, false);
+        break;
+      case 'select':
+        onSelect(action.rowId);
+        break;
+    }
+  }
+
+  function handleRowClick(
+    event: MouseEvent<HTMLTableRowElement>,
+    row: VisibleRow<T>,
+  ) {
+    const onToggle =
+      event.target instanceof Element &&
+      event.target.closest('[data-treegrid-toggle]') !== null;
+    if (onToggle && row.hasChildren) setExpanded(row.id, !row.expanded);
+    else onSelect(row.id);
+    event.currentTarget.focus({ preventScroll: true });
+  }
+
   return (
     <div className={styles.scroller}>
       <table
@@ -133,6 +260,9 @@ export function TreeGrid<T>({
         aria-labelledby={labelledBy}
         className={styles.table}
         style={{ '--treegrid-columns': columns.length } as CSSProperties}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         <colgroup>
           <col />
@@ -185,6 +315,16 @@ export function TreeGrid<T>({
                 aria-selected={selected}
                 tabIndex={tabIndex(row.id, null)}
                 className={styles.row}
+                ref={(element) => {
+                  if (element === null) return;
+                  rowElements.current.set(row.id, element);
+                  return () => {
+                    rowElements.current.delete(row.id);
+                  };
+                }}
+                onClick={(event) => {
+                  handleRowClick(event, row);
+                }}
               >
                 <th
                   role="rowheader"

@@ -6,10 +6,10 @@ import {
   within,
   type RenderResult,
 } from '@testing-library/react';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { expect, vi, type Mock } from 'vitest';
 import { TreeGrid, type TreeGridColumn } from './TreeGrid';
-import { useTreeState } from './useTreeState';
+import { useTreeState, type TreeState } from './useTreeState';
 
 export interface Place {
   id: string;
@@ -82,6 +82,8 @@ interface HarnessProps {
   onExpandedChange?: (ids: ReadonlySet<string>) => void;
   describeCell?: (place: Place, columnIndex: number) => string | undefined;
   renderCell?: (place: Place, columnIndex: number) => ReactNode;
+  /** Receives the expansion state, to change it from outside the grid. */
+  treeRef?: { current: TreeState | null };
 }
 
 export function Harness({
@@ -91,10 +93,14 @@ export function Harness({
   onExpandedChange,
   describeCell,
   renderCell = (node, index) => node.values[index],
+  treeRef,
 }: HarnessProps) {
   const tree = useTreeState({
     defaultExpandedIds,
     ...(onExpandedChange === undefined ? {} : { onExpandedChange }),
+  });
+  useEffect(() => {
+    if (treeRef !== undefined) treeRef.current = tree;
   });
   const [selectedId, setSelectedId] = useState(defaultSelectedId);
   return (
@@ -170,6 +176,13 @@ export function cellsOf(container: HTMLElement): HTMLElement[] {
       '[role="rowheader"], [role="gridcell"]',
     ),
   );
+}
+
+/** The focused element is `element`, and it is the grid's only tab stop. */
+export function expectFocusOn(element: HTMLElement): void {
+  expect(element).toHaveFocus();
+  expect(element).toHaveAttribute('tabindex', '0');
+  expectSingleTabStop();
 }
 
 export function visibleRowNames(): (string | null)[] {
