@@ -1,3 +1,191 @@
+@use 'sass:list';
+@use '../../tokens/geometry' as g;
+@use '../../tokens/mixins' as m;
+
+// docs/DESIGN.md "Table card" and "Narrow screens".
+//
+// Indent. The design indents levels 1-3 by 0, 28 and 56px to the chevron, and
+// level 4 (which has no chevron) by 108px to its label: exactly where a
+// level-3 name starts after its chevron and 20px avatar (56 + 16 + 8 + 20 + 8).
+// Every row here keeps a 16px chevron slot (empty on leaves) followed by the
+// 8px gap, so one uniform step per level, (level - 1) x 28px, reproduces all
+// four positions without knowing about avatars: the level-4 slot sits at 84px
+// and its label at 84 + 16 + 8 = 108px. Narrow screens halve the step.
+$indent-step: list.nth(g.$indent-steps, 2) * 1px;
+$narrow-indent-step: list.nth(g.$narrow-indent-steps, 2) * 1px;
+$chevron-size: 16px;
+// Leading padding of a row and the gap in front of every value column.
+$cell-gap: var(--space-4);
+// Trailing padding of a row.
+$row-end: var(--space-5);
+$selected-bar: 3px;
+
 .scroller {
+  // The containing block of the visually hidden descriptions in the cells:
+  // without it they escape the scroller and widen the page on narrow screens.
+  position: relative;
   overflow-x: auto;
+
+  @include m.narrow {
+    // Keeps a cell scrolled into view clear of the sticky name column
+    // (WCAG 2.2 Focus Not Obscured).
+    scroll-padding-inline-start: calc(#{$cell-gap} + #{g.$narrow-name-column});
+  }
+}
+
+.table {
+  // The design's name column widths (264px, 160px narrow) exclude the row's
+  // leading padding; the first table column includes it.
+  --treegrid-name-column: calc(#{$cell-gap} + #{g.$name-column});
+  --treegrid-indent-step: #{$indent-step};
+
+  // The name column takes whatever the value columns leave; it never gets
+  // narrower than the design, and the scroller handles the overflow.
+  width: max(
+    100%,
+    calc(
+      var(--treegrid-name-column) + var(--treegrid-columns) *
+        (#{$cell-gap} + #{g.$month-column}) + #{$row-end}
+    )
+  );
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  @include m.font-body;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--color-content-primary);
+
+  @include m.narrow {
+    --treegrid-name-column: calc(#{$cell-gap} + #{g.$narrow-name-column});
+    --treegrid-indent-step: #{$narrow-indent-step};
+  }
+}
+
+.valueColumn {
+  width: calc(#{$cell-gap} + #{g.$month-column});
+
+  &:last-child {
+    width: calc(#{$cell-gap} + #{g.$month-column} + #{$row-end});
+  }
+}
+
+.cell {
+  height: g.$row-height;
+  padding-block: 0;
+  padding-inline: $cell-gap 0;
+  border-bottom: 1px solid var(--color-line-solid);
+  font: inherit;
+  text-align: end;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:last-child {
+    padding-inline-end: $row-end;
+  }
+
+  &:focus-visible {
+    @include m.focus-ring-inset;
+  }
+}
+
+.alignStart {
+  text-align: start;
+}
+
+.columnHeader {
+  color: var(--color-content-secondary);
+}
+
+.row {
+  --treegrid-tint: transparent;
+  background-color: var(--treegrid-tint);
+  cursor: pointer;
+
+  &:hover {
+    --treegrid-tint: var(--color-surface-hover);
+  }
+
+  &[aria-selected='true'] {
+    --treegrid-tint: var(--color-surface-selected);
+  }
+
+  &:focus-visible {
+    @include m.focus-ring-inset;
+  }
+}
+
+.rowHeader {
+  --treegrid-ring: 0 0 transparent;
+  --treegrid-bar: 0 0 transparent;
+  --treegrid-edge: 0 0 transparent;
+  box-shadow: var(--treegrid-ring), var(--treegrid-bar), var(--treegrid-edge);
+  text-align: start;
+  white-space: normal;
+}
+
+// The leading bar is drawn by the first cell: table rows do not reliably
+// paint their own shadows.
+.row[aria-selected='true'] > .rowHeader {
+  --treegrid-bar: inset #{$selected-bar} 0 0 var(--color-content-primary);
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline-start: calc(
+    var(--treegrid-depth) * var(--treegrid-indent-step)
+  );
+  overflow-wrap: anywhere;
+}
+
+.slot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: $chevron-size;
+  height: $chevron-size;
+}
+
+.toggle {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+
+  // A 24px pointer target around the 16px icon (WCAG 2.2 Target Size); the
+  // slot and its 8px gap leave room for it.
+  &::before {
+    position: absolute;
+    inset: calc((24px - #{$chevron-size}) / -2);
+    content: '';
+  }
+}
+
+@include m.narrow {
+  .corner,
+  .rowHeader {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 1;
+    // Opaque, so scrolled cells do not show through; the row's tint is
+    // layered on top so hover and selection still read across the row.
+    background:
+      linear-gradient(var(--treegrid-tint), var(--treegrid-tint)),
+      var(--color-background-secondary);
+    --treegrid-edge: inset -1px 0 0 var(--color-line-solid);
+  }
+
+  .corner {
+    --treegrid-tint: transparent;
+    box-shadow: var(--treegrid-edge);
+  }
+
+  // The row's own outline may paint under the sticky cell, so the cell draws
+  // its part of the ring.
+  .row:focus-visible > .rowHeader {
+    --treegrid-ring:
+      inset 2px 0 0 var(--color-focus), inset 0 2px 0 var(--color-focus),
+      inset 0 -2px 0 var(--color-focus);
+  }
 }
