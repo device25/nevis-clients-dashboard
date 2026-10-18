@@ -132,6 +132,12 @@ system's source, which breaks the package boundary; tokens give the same
 consistency, and the two primitives let the app compose layout without
 writing CSS.
 
+Exception recorded by the orchestrator on 2026-10-19: SCSS modules reach the
+Sass partials in `tokens/` (mixins, geometry) with a relative `@use`. Sass
+cannot resolve the package's `imports` aliases, and a load path would make
+the package depend on its consumer's build configuration. The `../../` rule
+in `AGENTS.md` applies to TypeScript modules.
+
 ### D14. React Compiler
 
 **Why:** memoisation is the compiler's job in React 19; the code has no
@@ -140,9 +146,9 @@ checked to contain compiled output.
 
 ### D15. Own SVG chart
 
-**Why:** the design clips each stack as one rounded shape, separates segments
-with a gap and uses a dotted grid; a small SVG component matches that exactly,
-is fully testable, and adds no charting dependency.
+**Why:** the design clips each stack as one rounded shape, stacks segments
+without a gap and uses a dotted grid; a small SVG component matches that
+exactly, is fully testable, and adds no charting dependency.
 
 ## Behaviour under load and failure
 
@@ -226,6 +232,17 @@ stable release that satisfies the declared peer ranges of the other entries:
 
 **Why:** type-checked linting and the accessibility lint rules are
 requirements; a newer compiler or linter is not.
+
+### D21. The chart goes narrow by its own width
+
+Recorded by the orchestrator on 2026-10-19, from task DS1. The chart switches
+to its narrow geometry (short month labels, 220px plot, 4px gaps) when its
+own measured width is below 760px, not at a 640px viewport: twelve
+"MMM YYYY" labels overlap below about 760px of chart width, which a viewport
+rule would allow between 640px and about 830px. Page padding, title size and
+the table still switch at a 640px viewport as `DESIGN.md` says.
+**Why:** labels must not overlap at any width, and only the chart knows its
+own width.
 
 ## Open questions (for the README)
 
