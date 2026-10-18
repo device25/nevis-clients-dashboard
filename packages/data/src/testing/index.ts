@@ -1,1 +1,1 @@
-export {};
+export { TestDataProvider } from './TestDataProvider';
