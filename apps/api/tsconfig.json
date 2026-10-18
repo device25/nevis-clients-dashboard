@@ -5,6 +5,6 @@
     "lib": ["ES2024"],
     "types": ["node"]
   },
-  "include": ["src", "*.config.ts"],
+  "include": ["src", "src/data/clients.json", "*.config.ts"],
   "references": [{ "path": "../../packages/contract" }]
 }
