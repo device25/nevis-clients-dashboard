@@ -1,0 +1,12 @@
+# Assignment brief and anything else private — never committed
+.private/
+*.pdf
+*.fig
+
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.env*
+.DS_Store

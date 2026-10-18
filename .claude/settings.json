@@ -1,0 +1,31 @@
+{
+  "model": "claude-opus-5-5",
+  "effortLevel": "xhigh",
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git switch *)",
+      "Bash(git merge *)",
+      "Bash(git branch *)",
+      "Bash(git worktree *)",
+      "Bash(git checkout -- *)",
+      "Bash(git rev-parse *)",
+      "Bash(git ls-files *)",
+      "WebFetch(domain:www.w3.org)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git rebase *)",
+      "Read(./.env*)"
+    ]
+  }
+}
