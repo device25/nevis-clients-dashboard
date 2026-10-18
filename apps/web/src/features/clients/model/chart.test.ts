@@ -131,15 +131,15 @@ describe('chartAccessibleName', () => {
     );
   });
 
-  it('names the scope node, the grouping and the range of the stack totals', () => {
+  it('names the scope path, the grouping and the range of the stack totals', () => {
     expect(chartAccessibleName(toChartModel(COMPANY, ANNA.id))).toBe(
-      'Anna Blackwood, by acquisition channel, Feb 2024 to Jan 2025, between 25 and 38 a month.',
+      'Company › Branch 1 › Anna Blackwood, by acquisition channel, Feb 2024 to Jan 2025, between 25 and 38 a month.',
     );
   });
 
   it('names a leaf by its monthly total', () => {
     expect(chartAccessibleName(toChartModel(COMPANY, BRANCH_2.id))).toBe(
-      'Branch 2, monthly total, Feb 2024 to Jan 2025, between 75 and 94 a month.',
+      'Company › Branch 2, monthly total, Feb 2024 to Jan 2025, between 75 and 94 a month.',
     );
   });
 });

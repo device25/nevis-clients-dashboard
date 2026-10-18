@@ -131,12 +131,11 @@ export function toChartModel(
 }
 
 /**
- * The name of the chart image: scope, grouping, period and the range of the
- * stack totals. Only the scope node is named, not its whole path; the path
- * is on screen next to the chart.
+ * The name of the chart image: the full scope path (joined as in the visible
+ * path text), the grouping, the period and the range of the stack totals.
  */
 export function chartAccessibleName(model: ChartModel): string {
-  const scope = model.scopePath.at(-1) ?? '';
+  const scope = model.scopePath.join(' › ');
   const first = MONTHS[0].label;
   const last = MONTHS[MONTHS.length - 1]?.label ?? first;
   const low = Math.min(...model.childTotals);
