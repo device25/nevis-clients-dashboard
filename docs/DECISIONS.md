@@ -254,6 +254,34 @@ unchanged; the contract keeps the single definition (D4).
 meaning; when the API starts returning the reporting period (an open
 question), only `@nevis/data` changes.
 
+### D23. Table details settled during task T1
+
+Recorded by the orchestrator on 2026-10-19.
+
+- The first column header is visually empty but named "Name" by visually
+  hidden text: a header with no text fails axe's `empty-table-header` rule,
+  and `ACCESSIBILITY.md` requires axe to pass on the table.
+- Unselected body rows keep `aria-selected="false"`. The APG treegrid pattern
+  (informative) leaves `aria-selected` off every row but the selected one in
+  a single-select treegrid; WAI-ARIA 1.2 (normative) gives selectable
+  descendants that are not selected `aria-selected="false"`.
+  `ACCESSIBILITY.md` follows ARIA.
+- On narrow screens the name column's 160px is its content width, as the
+  264px is at full width; the sticky cell is 176px with the row's 16px
+  leading padding.
+- Indents follow one rule: (level − 1) × 28px (14px narrow), then a 16px
+  chevron slot on every row, empty on leaves. At full width this gives the
+  design's positions exactly, with a channel's label at 108px, where an
+  adviser's name starts after the avatar. On narrow screens a channel's
+  label sits at 66px instead of `DESIGN.md`'s 54px; neither lines up with
+  the adviser's name, because the avatar does not shrink.
+- Body rows are named by their label (`aria-label`), so a focused row is
+  announced by its name and state rather than all thirteen cells; the values
+  are reached with ArrowRight.
+
+**Why:** each point is the smallest change that keeps the specification's
+intent where it met a reference, an automated check or the design.
+
 ## Open questions (for the README)
 
 - Which total is correct where a parent and its children disagree, and who
