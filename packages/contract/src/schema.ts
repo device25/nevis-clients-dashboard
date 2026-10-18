@@ -19,7 +19,20 @@ const Values = z.tuple([
   Count,
 ]);
 
-export const ClientNodeSchema = z.object({
+type MonthlyValues = z.infer<typeof Values>;
+
+// Written out by hand: zod cannot infer a recursive type, and its attempt
+// leaks `any` into the emitted declarations that other packages read.
+export interface RawClientNode {
+  id: string;
+  name: string;
+  values: MonthlyValues;
+  branches?: RawClientNode[] | undefined;
+  employees?: RawClientNode[] | undefined;
+  channels?: RawClientNode[] | undefined;
+}
+
+export const ClientNodeSchema: z.ZodType<RawClientNode> = z.object({
   id: z.string(),
   name: z.string(),
   values: Values,
@@ -33,5 +46,3 @@ export const ClientNodeSchema = z.object({
     return z.array(ClientNodeSchema).optional();
   },
 });
-
-export type RawClientNode = z.infer<typeof ClientNodeSchema>;
