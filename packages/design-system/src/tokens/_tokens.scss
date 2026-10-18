@@ -1,0 +1,51 @@
+// Every value of docs/DESIGN.md "Tokens". Components read these through
+// var(--name); nothing else in the package declares a colour, space, radius
+// or type value.
+
+:root {
+  --color-background-primary: #f7f5ed;
+  --color-background-secondary: #ffffff;
+  --color-content-primary: #141413;
+  --color-content-secondary: rgb(20 20 19 / 60%);
+  --color-line-dotted: rgb(20 20 19 / 16%);
+  --color-line-solid: rgb(20 20 19 / 8%);
+  --color-surface-hover: rgb(20 20 19 / 4%);
+  --color-surface-selected: rgb(20 20 19 / 7%);
+  --color-focus: #3b5bdb;
+  --color-warning: #c2410c;
+
+  --color-chart-1: #b29df8;
+  --color-chart-2: #f4beb4;
+  --color-chart-3: #a75e6e;
+  --color-chart-4: #7fc8b4;
+  --color-chart-5: #4f6bb0;
+
+  --color-avatar-1: #b29df8;
+  --color-avatar-2: #f4beb4;
+  --color-avatar-3: #7fc8b4;
+  --color-avatar-4: #e9d48a;
+
+  --radius-card: 8px;
+  --radius-bar: 4px;
+  --radius-swatch: 2px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  // Fonts come from @fontsource-variable/inter (opsz build), loaded by the
+  // application; this package only names the family.
+  --font-title: 400 35px/1.25 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-body: 400 14px/20px 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-footnote: 400 12px/16px 'Inter Variable', Inter, system-ui, sans-serif;
+
+  // Not named in the design: the narrow-screen title (DESIGN.md "Narrow
+  // screens") and the weight the error heading needs.
+  --font-title-narrow:
+    400 28px/1.25 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-body-strong:
+    600 14px/20px 'Inter Variable', Inter, system-ui, sans-serif;
+}
