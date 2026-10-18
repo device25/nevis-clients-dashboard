@@ -1,0 +1,33 @@
+@use '../tokens/mixins' as m;
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.alignStart {
+  align-items: flex-start;
+}
+
+.alignCenter {
+  align-items: center;
+}
+
+.alignEnd {
+  align-items: flex-end;
+}
+
+.alignStretch {
+  align-items: stretch;
+}
+
+// The content column of a page: 24px above and below, 16px at the sides,
+// 12px on narrow screens (DESIGN.md "Page", "Narrow screens").
+.paddingPage {
+  padding: var(--space-5) var(--space-4);
+
+  @include m.narrow {
+    padding-inline: var(--space-3);
+  }
+}

@@ -29,8 +29,6 @@ export function avatarColor(id: string): string {
 }
 
 /** Joins class names, skipping the `undefined` that module lookups can return. */
-export function cx(
-  ...names: ReadonlyArray<string | false | undefined>
-): string {
+export function cx(...names: readonly (string | false | undefined)[]): string {
   return names.filter(Boolean).join(' ');
 }
