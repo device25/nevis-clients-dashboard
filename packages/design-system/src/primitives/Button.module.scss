@@ -1,0 +1,25 @@
+@use '../tokens/mixins' as m;
+
+.button {
+  @include m.font-body;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-bar);
+  background: var(--color-content-primary);
+  color: var(--color-background-secondary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(
+      in srgb,
+      var(--color-content-primary) 85%,
+      transparent
+    );
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+}

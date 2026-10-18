@@ -1,0 +1,19 @@
+@use '../tokens/mixins' as m;
+
+.heading {
+  margin: 0;
+  color: var(--color-content-primary);
+}
+
+.title {
+  @include m.font-title;
+
+  @include m.narrow {
+    font: var(--font-title-narrow);
+    font-optical-sizing: auto;
+  }
+}
+
+.body {
+  font: var(--font-body-strong);
+}

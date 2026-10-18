@@ -1,0 +1,21 @@
+// Measurements from docs/DESIGN.md that are not tokens. Mirrored in
+// geometry.ts for code that needs the same numbers; change both together.
+
+$narrow-viewport: 640px;
+// Below this measured chart width the 12 full "MMM YYYY" labels no longer fit.
+$narrow-chart: 760px;
+
+$row-height: 56px;
+$name-column: 264px;
+$month-column: 76px;
+$narrow-name-column: 160px;
+$indent-steps: (0, 28, 56, 108);
+$narrow-indent-steps: (0, 14, 28, 54);
+
+$chart-plot-height: 358px;
+$chart-narrow-plot-height: 220px;
+$chart-axis-width: 26px;
+$chart-narrow-axis-width: 24px;
+$chart-top: 10px;
+$chart-label-gap: 12px;
+$chart-label-height: 16px;

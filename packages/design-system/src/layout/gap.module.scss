@@ -1,0 +1,6 @@
+// One class per spacing token, generated once and shared by Stack and Inline.
+@for $step from 1 through 6 {
+  .gap#{$step} {
+    gap: var(--space-#{$step});
+  }
+}

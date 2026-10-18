@@ -1,0 +1,45 @@
+@use 'geometry';
+
+@mixin font-title {
+  font: var(--font-title);
+  font-optical-sizing: auto;
+}
+
+@mixin font-body {
+  font: var(--font-body);
+}
+
+@mixin font-footnote {
+  font: var(--font-footnote);
+}
+
+@mixin narrow {
+  @media (max-width: #{geometry.$narrow-viewport - 1px}) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// Same outline as the global :focus-visible rule, drawn inside the element for
+// rows and cells that sit in a clipping scroll container.
+@mixin focus-ring-inset {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

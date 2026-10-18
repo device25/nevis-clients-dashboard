@@ -1,0 +1,14 @@
+@use '../tokens/mixins' as m;
+
+.avatar {
+  @include m.font-footnote;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: var(--color-content-primary);
+  user-select: none;
+}

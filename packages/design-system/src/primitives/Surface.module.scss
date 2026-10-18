@@ -1,0 +1,13 @@
+.surface {
+  width: 100%;
+  min-width: 0;
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-card);
+  // Clips children, such as table rows, to the rounded corners.
+  overflow: hidden;
+}
+
+// Chart card: 24px above, 16px on the other sides.
+.paddingCard {
+  padding: var(--space-5) var(--space-4) var(--space-4);
+}
