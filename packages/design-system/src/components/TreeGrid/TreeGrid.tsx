@@ -25,10 +25,8 @@ import styles from './TreeGrid.module.scss';
 export interface TreeGridColumn {
   /** Stable key of the column. */
   id: string;
-  /** Content of the column header. */
+  /** Content of the column header. Headers and cells are aligned to the end. */
   header: ReactNode;
-  /** Text alignment of the header and the cells. Default `'end'`, for numbers. */
-  align?: 'start' | 'end';
 }
 
 /** What `renderRowHeader` may need to know about the row it draws. */
@@ -284,11 +282,7 @@ export function TreeGrid<T>({
                 key={column.id}
                 role="columnheader"
                 scope="col"
-                className={cx(
-                  styles.cell,
-                  styles.columnHeader,
-                  column.align === 'start' && styles.alignStart,
-                )}
+                className={cx(styles.cell, styles.columnHeader)}
               >
                 {column.header}
               </th>
@@ -366,10 +360,7 @@ export function TreeGrid<T>({
                       role="gridcell"
                       tabIndex={tabIndex(row.id, index + 1)}
                       aria-describedby={descriptionId}
-                      className={cx(
-                        styles.cell,
-                        column.align === 'start' && styles.alignStart,
-                      )}
+                      className={styles.cell}
                     >
                       {renderCell(row.node, column, index)}
                       {description !== undefined && (

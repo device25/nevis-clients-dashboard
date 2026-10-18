@@ -1,8 +1,10 @@
-import { screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { expectNoAxeViolations } from '#test-support/axe';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ALL_EXPANDED,
+  columns,
+  world,
   bodyRows,
   cell,
   cellsOf,
@@ -12,6 +14,7 @@ import {
   row,
   visibleRowNames,
 } from './fixture';
+import { TreeGrid } from './TreeGrid';
 
 describe('TreeGrid structure', () => {
   it('is a native table with the treegrid role, labelled by the heading', () => {
@@ -171,6 +174,38 @@ describe('TreeGrid structure', () => {
       ),
     });
     expect(cell('World', 1)).toHaveTextContent('*100');
+  });
+
+  it('gives the row header renderer the level, expansion and selection of its row', () => {
+    const states: string[] = [];
+    render(
+      <TreeGrid
+        root={world}
+        getId={(node) => node.id}
+        getChildren={(node) => node.children}
+        getLabel={(node) => node.name}
+        columns={columns}
+        nameColumnLabel="Place"
+        renderRowHeader={(node, state) => {
+          states.push(
+            `${node.id} ${String(state.level)} ${String(state.expanded)} ${String(state.selected)}`,
+          );
+          return node.name;
+        }}
+        renderCell={(node, _column, index) => node.values[index]}
+        labelledBy="places-heading"
+        expandedIds={new Set(['World'])}
+        onExpandedChange={vi.fn()}
+        selectedId="Asia"
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(states.slice(-4)).toEqual([
+      'World 1 true false',
+      'Europe 2 false false',
+      'Asia 2 false true',
+      'Oceania 2 undefined false',
+    ]);
   });
 
   it('has no axe violations when collapsed', async () => {
