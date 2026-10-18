@@ -244,6 +244,16 @@ the table still switch at a 640px viewport as `DESIGN.md` says.
 **Why:** labels must not overlap at any width, and only the chart knows its
 own width.
 
+### D22. The data package re-exports the months
+
+Recorded by the orchestrator on 2026-10-19, before task M1. `apps/web` may
+not import `@nevis/contract`, but it needs the month labels for the table
+header and the chart. `@nevis/data` re-exports `MONTHS` and `Month`
+unchanged; the contract keeps the single definition (D4).
+**Why:** the data package is the app's only door to the data and its
+meaning; when the API starts returning the reporting period (an open
+question), only `@nevis/data` changes.
+
 ## Open questions (for the README)
 
 - Which total is correct where a parent and its children disagree, and who

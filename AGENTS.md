@@ -82,7 +82,7 @@ apps/web ──► @nevis/data ──► @nevis/contract ◄── apps/api
 | Package | Path | Public API (`src/index.ts` only) | Hidden |
 |---|---|---|---|
 | `@nevis/contract` | `packages/contract` | `ClientNodeSchema`, `RawClientNode`, `MONTHS`, `Month` | — |
-| `@nevis/data` | `packages/data` | `DataProvider`, `useClientsTree`, `DataResetBoundary`, `DataError`, `HierarchyNode`, `NodeKind`; subpath `@nevis/data/testing` with `TestDataProvider` | fetch, schema validation, adapter, query keys, `QueryClient`, TanStack Query itself |
+| `@nevis/data` | `packages/data` | `DataProvider`, `useClientsTree`, `DataResetBoundary`, `DataError`, `HierarchyNode`, `NodeKind`, `MONTHS` and `Month` (re-exported, D22); subpath `@nevis/data/testing` with `TestDataProvider` | fetch, schema validation, adapter, query keys, `QueryClient`, TanStack Query itself |
 | `@nevis/design-system` | `packages/design-system` | `Stack`, `Inline`, `Heading`, `Text`, `Surface`, `Button`, `Avatar`, `Chevron`, `StatusDot`, `Skeleton`, `VisuallyHidden`, `ErrorState`, `ErrorBoundary`, `TreeGrid`, `useTreeState`, `StackedBarChart` and their prop types; subpath `@nevis/design-system/styles.css` | SCSS modules, token files, internal hooks |
 | `api` | `apps/api` | `GET /api/clients` | — |
 | `web` | `apps/web` | the application | — |
