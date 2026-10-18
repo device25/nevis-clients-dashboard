@@ -1,0 +1,15 @@
+# Instructions, specifications and the payload are owned by the orchestrator
+# and must stay byte-identical.
+AGENTS.md
+CLAUDE.md
+docs
+.claude
+.private
+apps/api/src/data/clients.json
+pnpm-lock.yaml
+node_modules
+dist
+coverage
+.tsbuild
+playwright-report
+test-results

@@ -1,0 +1,22 @@
+{
+  "name": "api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "NODE_ENV=production tsx src/server.ts"
+  },
+  "imports": {
+    "#routes": "./src/routes/index.ts",
+    "#data": "./src/data/index.ts"
+  },
+  "dependencies": {
+    "@fastify/static": "catalog:",
+    "@nevis/contract": "workspace:*",
+    "fastify": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:"
+  }
+}

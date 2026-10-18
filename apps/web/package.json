@@ -1,0 +1,37 @@
+{
+  "name": "web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "imports": {
+    "#ui": "./src/features/clients/ui/index.ts",
+    "#model": "./src/features/clients/model/index.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "catalog:",
+    "@nevis/data": "workspace:*",
+    "@nevis/design-system": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/core": "catalog:",
+    "@rolldown/plugin-babel": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/babel__core": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "axe-core": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
+    "sass": "catalog:",
+    "vite": "catalog:"
+  }
+}

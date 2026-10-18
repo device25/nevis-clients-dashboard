@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./test-support" },
+    { "path": "./packages/contract" },
+    { "path": "./packages/data" },
+    { "path": "./packages/design-system" },
+    { "path": "./apps/api" },
+    { "path": "./apps/web" }
+  ]
+}

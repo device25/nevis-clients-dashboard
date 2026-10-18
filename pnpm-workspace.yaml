@@ -1,0 +1,53 @@
+packages:
+  - packages/*
+  - apps/*
+
+# Dependency install scripts are denied unless listed. esbuild (used by tsx)
+# needs its postinstall to select the platform binary; @parcel/watcher is a
+# file watcher that sass loads optionally and nothing here needs.
+allowBuilds:
+  esbuild: true
+  '@parcel/watcher': false
+
+catalog:
+  # root dev
+  typescript: ~6.0.3
+  eslint: ^9.39.5
+  '@eslint/js': ^9.39.5
+  typescript-eslint: ^8.71.2
+  eslint-plugin-react-hooks: ^7.1.1
+  eslint-plugin-jsx-a11y: ^6.10.2
+  globals: ^17.13.0
+  prettier: ^3.9.10
+  vitest: ^5.0.5
+  concurrently: ^10.0.6
+  '@playwright/test': ^1.64.1
+  # contract
+  zod: ^4.6.7
+  # data
+  '@tanstack/react-query': ^5.104.4
+  msw: ^3.0.3
+  '@testing-library/react': ^16.3.3
+  jsdom: ^30.1.3
+  # design-system and web
+  sass: ^1.105.2
+  '@testing-library/user-event': ^14.6.8
+  '@testing-library/jest-dom': ^7.0.1
+  axe-core: ^4.14.0
+  # api
+  fastify: ^5.12.7
+  '@fastify/static': ^10.1.6
+  tsx: ^4.23.15
+  '@types/node': ^26.6.5
+  # web
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  '@fontsource-variable/inter': ^5.3.0
+  vite: ^8.3.4
+  '@vitejs/plugin-react': ^6.1.2
+  '@rolldown/plugin-babel': ^0.2.4
+  '@babel/core': ^8.0.7
+  '@types/babel__core': ^7.20.5
+  babel-plugin-react-compiler: ^1.0.0
+  '@types/react': ^19.3.0
+  '@types/react-dom': ^19.3.0

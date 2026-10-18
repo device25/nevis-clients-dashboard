@@ -1,0 +1,32 @@
+{
+  "name": "@nevis/data",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "imports": {
+    "#transport": "./src/transport/index.ts",
+    "#adapter": "./src/adapter/index.ts",
+    "#queries": "./src/queries/index.ts",
+    "#provider": "./src/provider/index.ts"
+  },
+  "dependencies": {
+    "@nevis/contract": "workspace:*",
+    "@tanstack/react-query": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
