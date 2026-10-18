@@ -52,6 +52,7 @@ const scopes = (files, rule) => ({
 export default tseslint.config(
   {
     ignores: [
+      '.claude/**',
       '**/dist/**',
       '**/coverage/**',
       '**/.tsbuild/**',
