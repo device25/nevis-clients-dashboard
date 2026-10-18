@@ -1,4 +1,4 @@
-import { ClientNodeSchema, type RawClientNode } from '@nevis/contract';
+import type { RawClientNode } from '@nevis/contract';
 import { DataError } from '#transport';
 import type { HierarchyNode, NodeKind } from './types';
 
@@ -11,18 +11,13 @@ const KINDS = [
 ] as const satisfies readonly NodeKind[];
 const LEVELS = [1, 2, 3, 4] as const;
 
-// The schema's recursive type erases the children to loose records. The input
-// is already validated, so parsing a child only restores its type.
-const typed = (list: readonly unknown[] | undefined): RawClientNode[] =>
-  (list ?? []).map((child) => ClientNodeSchema.parse(child));
-
 function convert(raw: RawClientNode, depth: number): HierarchyNode {
   const kind = KINDS[depth];
   const level = LEVELS[depth];
   const children = [
-    ...typed(raw.branches),
-    ...typed(raw.employees),
-    ...typed(raw.channels),
+    ...(raw.branches ?? []),
+    ...(raw.employees ?? []),
+    ...(raw.channels ?? []),
   ];
   // The schema allows any depth. Dropping a fifth level would hide data, so
   // the response counts as unreadable instead.
