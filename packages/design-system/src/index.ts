@@ -21,6 +21,11 @@ export {
 export {
   ErrorBoundary,
   ErrorState,
+  StackedBarChart,
   type ErrorBoundaryProps,
+  type ChartCategory,
+  type ChartSeries,
+  type ChartTooltipLine,
   type ErrorStateProps,
+  type StackedBarChartProps,
 } from '#components';

@@ -37,8 +37,13 @@
   border-radius: var(--radius-bar);
 }
 
-// The plot reproduces the geometry of StackedBarChart. Its size is queried on
-// the plot itself, like the chart measures itself, not on the viewport.
+// The plot reproduces the geometry of StackedBarChart. The frame is queried
+// for its own width, like the chart measures itself, not for the viewport; a
+// container query cannot restyle the container, hence the inner element.
+.frame {
+  container-type: inline-size;
+}
+
 .plot {
   --axis: #{g.$chart-axis-width};
   --axis-gap: 12px;
@@ -47,7 +52,6 @@
   --grid-height: 320px;
   --label-height: #{g.$chart-label-height};
 
-  container-type: inline-size;
   position: relative;
   height: g.$chart-plot-height;
 
@@ -58,6 +62,7 @@
     --bar-padding: 0px;
     --grid-height: 166px;
     --label-height: 32px;
+    height: g.$chart-narrow-plot-height;
   }
 }
 

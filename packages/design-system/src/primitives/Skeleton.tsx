@@ -25,38 +25,40 @@ function ChartSkeleton() {
     <Surface padding="card">
       <div className={styles.chartStack}>
         <div className={styles.caption} />
-        <div className={styles.plot}>
-          <div className={styles.yAxis}>
-            {repeat(Y_LABELS).map((line) => (
-              <div
-                key={`y-${String(line)}`}
-                className={styles.yLabel}
-                data-slot="y-label"
-              />
-            ))}
-          </div>
-          <div className={styles.grid}>
-            {repeat(Y_LABELS).map((line) => (
-              <div key={`grid-${String(line)}`} className={styles.gridLine} />
-            ))}
-          </div>
-          <div className={styles.bars}>
-            {repeat(MONTHS).map((month) => (
-              <div
-                key={`bar-${String(month)}`}
-                className={styles.bar}
-                data-slot="bar"
-              />
-            ))}
-          </div>
-          <div className={styles.xLabels}>
-            {repeat(MONTHS).map((month) => (
-              <div
-                key={`x-${String(month)}`}
-                className={styles.xLabel}
-                data-slot="x-label"
-              />
-            ))}
+        <div className={styles.frame}>
+          <div className={styles.plot}>
+            <div className={styles.yAxis}>
+              {repeat(Y_LABELS).map((line) => (
+                <div
+                  key={`y-${String(line)}`}
+                  className={styles.yLabel}
+                  data-slot="y-label"
+                />
+              ))}
+            </div>
+            <div className={styles.grid}>
+              {repeat(Y_LABELS).map((line) => (
+                <div key={`grid-${String(line)}`} className={styles.gridLine} />
+              ))}
+            </div>
+            <div className={styles.bars}>
+              {repeat(MONTHS).map((month) => (
+                <div
+                  key={`bar-${String(month)}`}
+                  className={styles.bar}
+                  data-slot="bar"
+                />
+              ))}
+            </div>
+            <div className={styles.xLabels}>
+              {repeat(MONTHS).map((month) => (
+                <div
+                  key={`x-${String(month)}`}
+                  className={styles.xLabel}
+                  data-slot="x-label"
+                />
+              ))}
+            </div>
           </div>
         </div>
         <div className={styles.legend}>
