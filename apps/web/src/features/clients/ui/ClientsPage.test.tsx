@@ -1,5 +1,6 @@
 import { DataProvider } from '@nevis/data';
 import {
+  act,
   fireEvent,
   isInaccessible,
   render,
@@ -10,7 +11,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { expectNoAxeViolations } from '#test-support/axe';
 import { delay, http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ClientsPage } from './ClientsPage';
 import { clientsPayload } from './testing/clientsPayload';
 import {
@@ -95,18 +96,60 @@ describe('while the data is loading', () => {
     return renderPage();
   }
 
-  it('shows the heading and a busy dashboard, and announces "Loading clients" in a status outside it', () => {
+  it('shows the heading and a busy dashboard, with a status outside it', () => {
     renderPending();
 
     expect(
       screen.getByRole('heading', { level: 1, name: 'Clients' }),
     ).toBeVisible();
-    const status = screen.getByRole('status');
-    expect(status).toHaveTextContent('Loading clients');
-    expect(status.closest('[aria-busy]')).toBeNull();
+    expect(screen.getByRole('status').closest('[aria-busy]')).toBeNull();
     expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
     expect(screen.queryByRole('treegrid')).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  describe('with the clock under test', () => {
+    // Only the timers the page itself sets; the network stays on real time.
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('announces "Loading clients" once the skeleton has been showing for 150ms', () => {
+      renderPending();
+      const status = screen.getByRole('status');
+
+      expect(status).toBeEmptyDOMElement();
+      act(() => {
+        vi.advanceTimersByTime(149);
+      });
+      expect(status).toBeEmptyDOMElement();
+      act(() => {
+        vi.advanceTimersByTime(1);
+      });
+      expect(status).toHaveTextContent('Loading clients');
+    });
+
+    it('never announces a response that arrives before the skeleton fades in', async () => {
+      server.use(
+        http.get(CLIENTS_URL, () => HttpResponse.json(clientsPayload)),
+      );
+      renderPage();
+      const status = screen.getByRole('status');
+      expect(status).toBeEmptyDOMElement();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+      });
+      expect(screen.getByRole('treegrid', { name: 'Clients' })).toBeVisible();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+
+      expect(status).toBeEmptyDOMElement();
+    });
   });
 
   it('keeps the same, now empty, status element once the data has arrived', async () => {
@@ -122,7 +165,9 @@ describe('while the data is loading', () => {
     );
     renderPage();
     const status = screen.getByRole('status');
-    expect(status).toHaveTextContent('Loading clients');
+    await waitFor(() => {
+      expect(status).toHaveTextContent('Loading clients');
+    });
 
     respond();
     await screen.findByRole('treegrid', { name: 'Clients' });

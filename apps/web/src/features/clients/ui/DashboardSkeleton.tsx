@@ -2,10 +2,15 @@ import { Skeleton, Stack } from '@nevis/design-system';
 import { useEffect } from 'react';
 import { SCOPE_NOTE } from '#model';
 
+/** How long the design system's skeleton waits before it fades in (D16). */
+const FADE_IN_DELAY_MS = 150;
+
 interface DashboardSkeletonProps {
   /**
-   * Called with `true` when the skeleton appears and `false` when it goes.
-   * The page announces the loading in a status of its own (D24).
+   * Called with `true` once the skeleton has been on screen for as long as it
+   * takes to fade in, and with `false` when it goes. A response that beats
+   * the fade shows no skeleton, so it is not announced either. The page
+   * announces the loading in a status of its own (D24).
    */
   onShownChange: (shown: boolean) => void;
 }
@@ -13,8 +18,11 @@ interface DashboardSkeletonProps {
 /** The dashboard's layout without data: the same cards and sizes (D16). */
 export function DashboardSkeleton({ onShownChange }: DashboardSkeletonProps) {
   useEffect(() => {
-    onShownChange(true);
+    const timer = setTimeout(() => {
+      onShownChange(true);
+    }, FADE_IN_DELAY_MS);
     return () => {
+      clearTimeout(timer);
       onShownChange(false);
     };
   }, [onShownChange]);
