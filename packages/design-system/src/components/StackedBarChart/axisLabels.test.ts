@@ -7,6 +7,8 @@ import { computeLayout } from './layout';
 // "MMM YYYY" label is "May 2024", the widest "MMM" label is "May".
 const MEASURED_LONG = 70.73;
 const MEASURED_SHORT = 28.47;
+// A spaced "2024" measures 35.5px.
+const YEAR = 35.55;
 
 function plan(chartWidth: number, measured: { long: number; short: number }) {
   const layout = computeLayout({
@@ -20,7 +22,8 @@ function plan(chartWidth: number, measured: { long: number; short: number }) {
     return {
       width: layout.narrow ? measured.short : measured.long,
       anchor: captioned ? (index === 0 ? 'start' : 'end') : 'middle',
-    };
+      ...(captioned ? { captionWidth: YEAR } : {}),
+    } satisfies XLabelItem;
   });
   const pitch = layout.barWidth + layout.barGap;
   return planXLabels({
@@ -119,6 +122,71 @@ describe('planXLabels', () => {
     expect(last?.index).toBe(11);
     expect(last?.anchor).toBe('end');
     expect(last?.x).toBe(264);
+  });
+
+  it('moves the caption of a dropped label to the nearest drawn label', () => {
+    // 264px: labels on Mar, May, Jul, Sep, Nov and Jan; Feb is dropped.
+    const { placements } = plan(264, {
+      long: estimateTextWidth('May 2024'),
+      short: estimateTextWidth('May'),
+    });
+    const captions = placements.flatMap((placement) =>
+      placement.caption
+        ? [{ host: placement.index, from: placement.caption.index }]
+        : [],
+    );
+    expect(captions).toEqual([
+      { host: 1, from: 0 },
+      { host: 11, from: 11 },
+    ]);
+  });
+
+  it('keeps every caption inside the chart and apart from the others, from a 320px viewport up', () => {
+    for (let width = 264; width < 760; width += 1) {
+      const { placements } = plan(width, {
+        long: MEASURED_LONG,
+        short: MEASURED_SHORT,
+      });
+      const boxes = placements.flatMap((placement) =>
+        placement.caption ? [placement.caption] : [],
+      );
+      // The first month's caption is never lost: it stays where it is or moves.
+      expect(
+        boxes.map((box) => box.index),
+        `captions at ${String(width)}px`,
+      ).toEqual([0, 11]);
+      for (const [position, box] of boxes.entries()) {
+        expect(box.left, `left at ${String(width)}px`).toBeGreaterThanOrEqual(
+          0,
+        );
+        expect(box.right, `right at ${String(width)}px`).toBeLessThanOrEqual(
+          width,
+        );
+        const next = boxes[position + 1];
+        if (next) {
+          expect(
+            next.left - box.right,
+            `caption gap at ${String(width)}px`,
+          ).toBeGreaterThanOrEqual(4);
+        }
+      }
+    }
+  });
+
+  it('does not put a caption on a label that already has one, and drops it instead', () => {
+    // Two columns that cannot both be labelled: only the last is drawn and
+    // it keeps its own caption.
+    const { placements } = planXLabels({
+      items: [
+        { width: 30, anchor: 'start', captionWidth: 30 },
+        { width: 30, anchor: 'end', captionWidth: 30 },
+      ],
+      barX: (index) => index * 12,
+      barWidth: 8,
+      chartWidth: 20,
+    });
+    expect(placements).toHaveLength(1);
+    expect(placements[0]?.caption?.index).toBe(1);
   });
 
   it('moves a centred label that would leave the chart to the edge', () => {

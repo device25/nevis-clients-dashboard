@@ -383,13 +383,14 @@ describe('StackedBarChart', () => {
       ]);
     });
 
-    it('labels every second month, counted back from the last, when they would overlap', () => {
+    it('labels every second month, counted back from the last, and moves the first year to Mar', () => {
       const { container } = renderChart();
       const labels = Array.from(container.querySelectorAll('svg text')).map(
         (text) => text.textContent,
       );
       expect(labels.slice(5)).toEqual([
         'Mar',
+        '2024',
         'May',
         'Jul',
         'Sep',
@@ -408,6 +409,7 @@ describe('StackedBarChart', () => {
     );
     expect(labels.slice(5)).toEqual([
       'Mar',
+      '2024',
       'May',
       'Jul',
       'Sep',
