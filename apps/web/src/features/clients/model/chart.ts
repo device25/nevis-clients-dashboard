@@ -5,7 +5,7 @@ export type MonthlyValues = HierarchyNode['values'];
 export type Grouping =
   'By branch' | 'By adviser' | 'By acquisition channel' | 'Monthly total';
 
-export interface ChartSeries {
+export interface ScopeSeries {
   readonly id: string;
   readonly name: string;
   readonly values: MonthlyValues;
@@ -17,7 +17,7 @@ export interface ChartModel {
   /** Names from the root down to the scope node. */
   readonly scopePath: readonly string[];
   readonly grouping: Grouping;
-  readonly series: readonly ChartSeries[];
+  readonly series: readonly ScopeSeries[];
   /** False at a leaf, where the one series is the node's own values. */
   readonly hasChildren: boolean;
   /** Sum of the series in each month: the height of each stack. */
@@ -105,7 +105,7 @@ export function toChartModel(
   selectedId: string,
 ): ChartModel {
   const { node, path, position } = scopeOf(root, selectedId);
-  const series: readonly ChartSeries[] =
+  const series: readonly ScopeSeries[] =
     node.children.length > 0
       ? node.children.map((child, colorIndex) => ({
           id: child.id,
