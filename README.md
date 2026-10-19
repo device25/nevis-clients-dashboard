@@ -13,9 +13,9 @@ You need Node 24 or later and pnpm 12. The pnpm version is pinned in
 ```sh
 pnpm install
 pnpm dev                                # API on :3001, web app on http://localhost:5173
-pnpm check                              # dedupe, typecheck, lint, format, 282 unit and component tests
+pnpm check                              # dedupe, typecheck, lint, format, 291 unit and component tests
 pnpm exec playwright install chromium   # once, before the first end-to-end run
-pnpm test:e2e                           # builds, starts the real server, 8 Playwright tests in Chromium
+pnpm test:e2e                           # builds, starts the real server, 9 Playwright tests in Chromium
 pnpm build && pnpm start                # production build, served at http://localhost:3001
 ```
 
@@ -218,7 +218,8 @@ The target is WCAG 2.2 AA. The references and every rule are listed in
 - axe-core on the skeleton, the data and widget errors, the collapsed and
   expanded tables, and the chart at Company and Anna Blackwood scope;
 - in Chromium, no horizontal scroll at 320px and 375px, no overlapping axis
-  labels, and no layout shift when the data arrives.
+  labels, both years on the axis at every width, and no layout shift when the
+  data arrives.
 
 axe runs in jsdom with its colour-contrast rule off. Contrast, text spacing
 and the chart tooltip were therefore checked by an audit in Chromium: the
@@ -286,6 +287,13 @@ How the checks changed the code:
   It also flagged the loading status sitting inside the busy region, where
   screen readers may not announce it. All of these are fixed and covered by
   tests.
+
+- **The re-audit and the re-review each found one problem the fixes had
+  caused,** and both are fixed and tested:
+  - on narrow charts the tooltip still changed month on the pointer's way
+    to it;
+  - labelling every second month dropped the only "2024" caption, so the
+    axis read as if every month were in 2025.
 
 - **The review found nothing blocking in the code.** Its other findings
   changed:
