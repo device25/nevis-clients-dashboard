@@ -35,7 +35,7 @@ cells are `gridcell`s. Single-select: `aria-multiselectable` is absent.
 | `aria-setsize`, `aria-posinset` | Number of siblings and 1-based position among them |
 | `aria-expanded` | `true`/`false` only on rows with children; absent on every leaf |
 | `aria-selected` | `true` on the selected row, `false` on every other body row |
-| `tabindex` | `0` on exactly one element of the grid (the focused row or cell), `-1` on every other row and cell |
+| `tabindex` | `0` on exactly one element of the grid (the focused row or cell), `-1` on every other body row and cell; header cells have none |
 
 Collapsed descendants are not rendered. `aria-rowcount` and `aria-rowindex`
 are not used.
@@ -81,12 +81,15 @@ for example "Reported 301, children add up to 279."
 
 - One `<h1>` "Clients"; the chart and the table are `<section>`s labelled by
   visually hidden headings "Chart" and "Table".
-- Skeleton: the dashboard region has `aria-busy="true"` and contains an
-  element with `role="status"` and the text "Loading clients".
+- Skeleton: the dashboard region has `aria-busy="true"`. An element with
+  `role="status"` outside that region, present from the first render, holds
+  the text "Loading clients" while the skeleton shows and is empty otherwise
+  (D24).
 - Data and widget errors: `ErrorState` has `role="alert"`, a heading, the
   message and a native "Try again" button; when it appears, focus moves to
   its heading (`tabindex="-1"`).
-- After a successful retry, focus moves to the "Clients" heading.
+- After a successful retry, of the data or of a widget, focus moves to the
+  "Clients" heading.
 - Root error page: heading, message, "Reload" button; focus on the heading.
 
 ## Visual

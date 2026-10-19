@@ -263,8 +263,9 @@ Recorded by the orchestrator on 2026-10-19.
   and `ACCESSIBILITY.md` requires axe to pass on the table.
 - Unselected body rows keep `aria-selected="false"`. The APG treegrid pattern
   (informative) leaves `aria-selected` off every row but the selected one in
-  a single-select treegrid; WAI-ARIA 1.2 (normative) gives selectable
-  descendants that are not selected `aria-selected="false"`.
+  a single-select treegrid; the value table of WAI-ARIA 1.2 (normative)
+  defines an absent `aria-selected` as "not selectable" and `false` as
+  selectable but not selected, which is what these rows are.
   `ACCESSIBILITY.md` follows ARIA.
 - On narrow screens the name column's 160px is its content width, as the
   264px is at full width; the sticky cell is 176px with the row's 16px
@@ -281,6 +282,26 @@ Recorded by the orchestrator on 2026-10-19.
 
 **Why:** each point is the smallest change that keeps the specification's
 intent where it met a reference, an automated check or the design.
+
+### D24. Changes after the accessibility audit and the review
+
+Recorded by the orchestrator on 2026-10-19, from tasks V1 and V2.
+
+- The "Loading clients" status lives outside the `aria-busy` region and is
+  mounted from the first render; its text is set while the skeleton shows.
+  WAI-ARIA 1.2 lets assistive technology ignore changes inside a busy
+  element, and screen readers often stay silent for a live region that
+  arrives with its text already in it.
+- A successful widget retry moves focus to the "Clients" heading, as a data
+  retry does, instead of leaving it on `<body>`.
+- `aborted` (D17) renders nothing. TanStack Query does not surface the error
+  of a cancelled query to the component, so the case is not reachable in
+  practice, and no retry loop is written for it.
+- At a leaf scope the chart tooltip shows only the month and the one series:
+  "Children total" and "Reported total" describe a node with children.
+
+**Why:** each change closes an audit or review finding with the least code
+that meets the specification.
 
 ## Open questions (for the README)
 
