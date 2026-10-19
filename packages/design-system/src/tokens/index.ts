@@ -3,11 +3,6 @@ export { CHART, NARROW_CHART_WIDTH } from './geometry';
 export const GAPS = [1, 2, 3, 4, 5, 6] as const;
 export type Gap = (typeof GAPS)[number];
 
-/** `var(--space-N)` for a gap step. */
-export function spaceVar(gap: Gap): string {
-  return `var(--space-${String(gap)})`;
-}
-
 const CHART_COLOR_COUNT = 5;
 const AVATAR_COLOR_COUNT = 4;
 
