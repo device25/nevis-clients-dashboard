@@ -29,8 +29,10 @@ pnpm build && pnpm start                # production build, served at http://loc
 - **CI:** `.github/workflows/ci.yml` runs all of this on a clean install. It
   has not run yet, because nothing has been pushed.
 
-The API reads three switches, under both `pnpm dev` and `pnpm start`. An
-invalid value stops the server at startup with a message.
+The API reads three switches. `API_DELAY_MS` and `API_FAIL` work under both
+`pnpm dev` and `pnpm start`. `PORT` is for `pnpm start` only, because the dev
+proxy in Vite points at port 3001. An invalid value stops the server at
+startup with a message.
 
 | Variable       | Values                                 | Effect                                                                        |
 | -------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
@@ -64,8 +66,9 @@ apps/web ──► @nevis/data ──► @nevis/contract ◄── apps/api
   it unchanged at `GET /api/clients`, and in production also serves the built
   app.
 - **`apps/web`:** the page. A pure model computes the mismatches and the chart
-  scope, and the UI connects the data to the design system. It contains no
-  CSS.
+  scope, and the UI connects the data to the design system. It has no
+  stylesheets apart from the page shell in `index.html`, which paints the
+  background and heading before the JavaScript loads.
 
 Packages are used from source, with no build step. TypeScript project
 references and ESLint enforce the arrows above and the layers inside each
@@ -182,9 +185,9 @@ Three other problems:
 - Can the API return the reporting period, instead of the client assuming
   Feb 2024 to Jan 2025?
 - Should avatars come from the API?
-- Is it acceptable to label every second month on narrow screens and on
-  charts narrower than about 1030px? The table and the tooltip still name
-  every month.
+- Is it acceptable to label every second month on screens narrower than
+  about 475px, and on charts between about 760px and 1030px wide? The table
+  and the tooltip still name every month.
 
 ## Accessibility
 
@@ -242,8 +245,10 @@ code, and instead:
 - recorded decisions in `docs/DECISIONS.md`;
 - wrote this README.
 
-The engineers worked in separate git worktrees, wrote a failing test before
-each behaviour, and committed after each step. The auditor and the reviewer
+The engineers worked in separate git worktrees. They were required to write
+the failing test first for each behaviour and to commit after each step, but
+the history doesn't show that every time; some commits hold a test and its
+code together. The auditor and the reviewer
 could read but not write.
 
 | Agent                    | Model             | Produced                                                     |
@@ -272,8 +277,8 @@ How the checks changed the code:
   - an empty column header fails axe (D23);
   - twelve full month labels overlap below a certain width (D21).
 - **The accessibility audit found four blocking problems:**
-  - the chart tooltip could not be dismissed with Escape, and it vanished
-    when the pointer moved onto it (WCAG 1.4.13);
+  - the chart tooltip could not be dismissed with Escape (WCAG 1.4.13);
+  - it vanished when the pointer moved onto it (WCAG 1.4.13);
   - month labels overlapped at 320px and under user text spacing, and axis
     labels were clipped (WCAG 1.4.10 and 1.4.12);
   - focus was lost after a widget retry.
