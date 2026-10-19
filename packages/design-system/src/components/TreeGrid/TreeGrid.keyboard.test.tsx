@@ -373,5 +373,6 @@ describe('TreeGrid scrolling', () => {
       inline: 'nearest',
     });
     expect(scrollIntoView.mock.contexts.at(-1)).toBe(cell('Oceania', 1));
+    expectSingleTabStop();
   });
 });
