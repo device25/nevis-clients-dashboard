@@ -1,5 +1,5 @@
 import { DataProvider } from '@nevis/data';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoAxeViolations } from '#test-support/axe';
 import { delay, http, HttpResponse } from 'msw';
@@ -58,7 +58,7 @@ describe('while the data is loading', () => {
     return renderPage();
   }
 
-  it('shows the heading and a busy dashboard that announces "Loading clients"', () => {
+  it('shows the heading and a busy dashboard, and announces "Loading clients" in a status outside it', () => {
     renderPending();
 
     expect(
@@ -66,9 +66,35 @@ describe('while the data is loading', () => {
     ).toBeVisible();
     const status = screen.getByRole('status');
     expect(status).toHaveTextContent('Loading clients');
-    expect(status.closest('[aria-busy="true"]')).not.toBeNull();
+    expect(status.closest('[aria-busy]')).toBeNull();
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
     expect(screen.queryByRole('treegrid')).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('keeps the same, now empty, status element once the data has arrived', async () => {
+    let respond: () => void = () => undefined;
+    const arrived = new Promise<void>((resolve) => {
+      respond = resolve;
+    });
+    server.use(
+      http.get(CLIENTS_URL, async () => {
+        await arrived;
+        return HttpResponse.json(clientsPayload);
+      }),
+    );
+    renderPage();
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('Loading clients');
+
+    respond();
+    await screen.findByRole('treegrid', { name: 'Clients' });
+
+    expect(screen.getByRole('status')).toBe(status);
+    await waitFor(() => {
+      expect(status).toBeEmptyDOMElement();
+    });
+    expect(document.querySelector('[aria-busy]')).toBeNull();
   });
 
   it('has no axe violations', async () => {
@@ -90,7 +116,7 @@ describe('the loaded dashboard', () => {
     expect(row('Branch 1')).toHaveAttribute('aria-expanded', 'false');
     expect(row('Branch 1')).toHaveAttribute('aria-selected', 'false');
     expect(row('Branch 2')).not.toHaveAttribute('aria-expanded');
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('shows the Company scope: path, grouping, three branches, name and scope note', async () => {
