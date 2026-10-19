@@ -53,9 +53,28 @@ test('drills down to a channel split with the keyboard', async ({ page }) => {
 test('does not overflow a 375px wide screen', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await openDashboard(page);
+  const scrollWidth = () =>
+    page.evaluate(() => document.documentElement.scrollWidth);
 
-  const scrollWidth = await page.evaluate(
-    () => document.documentElement.scrollWidth,
-  );
-  expect(scrollWidth).toBe(375);
+  expect(await scrollWidth()).toBe(375);
+
+  // The widest states: every row that can open is open, the channel split is
+  // charted, and the tooltip is out.
+  await page.getByRole('row', { name: 'Company' }).focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Space');
+  await expect(
+    page.getByRole('img', { name: /^Company › Branch 1 › Anna Blackwood/ }),
+  ).toBeVisible();
+  await expect(page.getByRole('row')).toHaveCount(13);
+
+  await page
+    .getByRole('img', { name: /^Company › Branch 1 › Anna Blackwood/ })
+    .hover({ position: { x: 300, y: 100 } });
+  await expect(page.getByText('Children total')).toBeVisible();
+
+  expect(await scrollWidth()).toBe(375);
 });
