@@ -252,8 +252,11 @@ back from the last, at the smallest n that keeps neighbouring labels 4px
 apart. All twelve full labels show from about 1030px of chart width (a
 1440px viewport). Every second month is labelled between 760px and 1030px,
 and below about 418px in the narrow geometry (the 320–375px viewports). The
-table and the tooltip still name every month. Y-axis labels may extend into
-the card's padding instead of being clipped.
+table and the tooltip still name every month. When a month that carries a
+year caption is not labelled, its caption moves to the nearest labelled
+month, so on narrow screens "2024" sits under Mar instead of Feb and both
+years always show. Y-axis labels may extend into the card's padding instead
+of being clipped.
 
 ### D22. The data package re-exports the months
 
