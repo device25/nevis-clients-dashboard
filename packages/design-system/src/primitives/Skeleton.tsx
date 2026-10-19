@@ -5,6 +5,12 @@ export type SkeletonProps =
   | {
       /** The chart card: caption, axes, 12 empty bar slots and the legend. */
       variant: 'chart';
+      /**
+       * Text of a footnote that the loaded chart card shows under the legend.
+       * It is laid out in the footnote style but invisible, so the card
+       * reserves exactly its height at every width.
+       */
+      footnote?: string;
     }
   | {
       /** The table card: a header row and `rows` body rows. */
@@ -20,7 +26,7 @@ function repeat(count: number): number[] {
   return Array.from({ length: count }, (_, index) => index);
 }
 
-function ChartSkeleton() {
+function ChartSkeleton({ footnote }: { footnote: string | undefined }) {
   return (
     <Surface padding="card">
       <div className={styles.chartStack}>
@@ -61,11 +67,16 @@ function ChartSkeleton() {
             </div>
           </div>
         </div>
-        <div className={styles.legend}>
+        <div className={styles.legend} data-slot="legend">
           {repeat(3).map((item) => (
             <div key={`legend-${String(item)}`} className={styles.legendItem} />
           ))}
         </div>
+        {footnote !== undefined && (
+          <p className={styles.footnote} data-slot="footnote">
+            {footnote}
+          </p>
+        )}
       </div>
     </Surface>
   );
@@ -113,7 +124,7 @@ export function Skeleton(props: SkeletonProps) {
   return (
     <div className={styles.fade} aria-hidden="true">
       {props.variant === 'chart' ? (
-        <ChartSkeleton />
+        <ChartSkeleton footnote={props.footnote} />
       ) : (
         <TableSkeleton rows={props.rows ?? 4} />
       )}

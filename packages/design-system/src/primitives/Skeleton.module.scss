@@ -152,6 +152,15 @@
   border-radius: var(--radius-swatch);
 }
 
+// The real footnote's text, in its style and centred, but invisible: it
+// reserves the height of however many lines it wraps to at this width.
+.footnote {
+  @include m.font-footnote;
+  margin: 0;
+  text-align: center;
+  visibility: hidden;
+}
+
 // Table card ---------------------------------------------------------------
 
 .table {
