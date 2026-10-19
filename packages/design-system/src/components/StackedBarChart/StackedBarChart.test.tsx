@@ -240,6 +240,55 @@ describe('StackedBarChart', () => {
     expect(tooltip(container)).toBeNull();
   });
 
+  it('hides the tooltip on Escape, leaves focus alone, and shows it again on another column', () => {
+    const { container } = renderChart();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    hover(container, columnCentre(3));
+    expect(tooltip(container)).toHaveTextContent('May 2024');
+    fireEvent.keyDown(outside, { key: 'Escape' });
+    expect(tooltip(container)).toBeNull();
+    expect(outside).toHaveFocus();
+    // Still over May: stays hidden.
+    hover(container, columnCentre(3) + 5);
+    expect(tooltip(container)).toBeNull();
+    hover(container, columnCentre(4));
+    expect(tooltip(container)).toHaveTextContent('Jun 2024');
+    outside.remove();
+  });
+
+  it('shows a dismissed column again after the pointer leaves and comes back', () => {
+    const { container } = renderChart();
+    hover(container, columnCentre(3));
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(tooltip(container)).toBeNull();
+    const svg = container.querySelector('svg');
+    if (!svg) throw new Error('no svg');
+    fireEvent.pointerLeave(svg);
+    hover(container, columnCentre(3));
+    expect(tooltip(container)).toHaveTextContent('May 2024');
+  });
+
+  it('keeps the tooltip, and its month, while the pointer moves onto it', () => {
+    const { container } = renderChart();
+    hover(container, columnCentre(3));
+    const shown = tooltip(container);
+    const svg = container.querySelector('svg');
+    if (!shown || !svg) throw new Error('missing tooltip or svg');
+    // The pointer leaves the drawing for the tooltip, then moves over it at
+    // an x that lies above the next column.
+    fireEvent.pointerOut(svg, { relatedTarget: shown });
+    fireEvent.pointerMove(shown, { clientX: columnCentre(4), clientY: 100 });
+    expect(tooltip(container)).toBe(shown);
+    expect(shown).toHaveTextContent('May 2024');
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    fireEvent.pointerOut(shown, { relatedTarget: outside });
+    expect(tooltip(container)).toBeNull();
+    outside.remove();
+  });
+
   it('omits the divider when there are no extra lines', () => {
     const { container } = renderChart();
     hover(container, columnCentre(0));
