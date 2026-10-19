@@ -78,3 +78,88 @@ test('does not overflow a 375px wide screen', async ({ page }) => {
 
   expect(await scrollWidth()).toBe(375);
 });
+
+for (const width of [1440, 375]) {
+  test(`does not move the table when the data arrives at ${String(width)}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    // The request still reaches the real server; it only leaves later, so the
+    // skeleton is on screen long enough to be measured.
+    await page.route('**/api/clients', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.continue();
+    });
+
+    await page.goto('/');
+    const skeletonTable = page.locator('[aria-busy="true"] > :nth-child(2)');
+    await expect(skeletonTable).toBeVisible();
+    const before = await skeletonTable.boundingBox();
+
+    await expect(page.getByRole('treegrid', { name: 'Clients' })).toBeVisible();
+    await expect(
+      page.getByRole('img', { name: /^Company, by branch/ }),
+    ).toBeVisible();
+    const after = await page
+      .getByRole('region', { name: 'Table' })
+      .boundingBox();
+
+    expect(before).not.toBeNull();
+    expect(after).not.toBeNull();
+    expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThanOrEqual(1);
+  });
+}
+
+for (const width of [320, 375]) {
+  test(`keeps the month labels apart and inside the chart card at ${String(width)}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await openDashboard(page);
+
+    const card = await page
+      .getByRole('region', { name: 'Chart' })
+      .boundingBox();
+    // Month labels, and the year captions under the first and last month.
+    const labels = page
+      .getByRole('img', { name: /^Company, by branch/ })
+      .locator('text')
+      .filter({ hasText: /^([A-Z][a-z]{2}( \d{4})?|\d{4})$/ });
+    const count = await labels.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+    const boxes = [];
+    for (let index = 0; index < count; index += 1) {
+      const box = await labels.nth(index).boundingBox();
+      expect(box).not.toBeNull();
+      boxes.push(box);
+    }
+
+    expect(card).not.toBeNull();
+    for (const box of boxes) {
+      expect(box?.x ?? 0).toBeGreaterThanOrEqual(card?.x ?? 0);
+      expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+        (card?.x ?? 0) + (card?.width ?? 0),
+      );
+    }
+    for (const [i, a] of boxes.entries()) {
+      for (const b of boxes.slice(i + 1)) {
+        const apart =
+          (a?.x ?? 0) + (a?.width ?? 0) <= (b?.x ?? 0) ||
+          (b?.x ?? 0) + (b?.width ?? 0) <= (a?.x ?? 0) ||
+          (a?.y ?? 0) + (a?.height ?? 0) <= (b?.y ?? 0) ||
+          (b?.y ?? 0) + (b?.height ?? 0) <= (a?.y ?? 0);
+        expect(apart).toBe(true);
+      }
+    }
+  });
+}
+
+test('does not scroll horizontally at 320px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await openDashboard(page);
+
+  const scrollWidth = await page.evaluate(
+    () => document.documentElement.scrollWidth,
+  );
+  expect(scrollWidth).toBe(320);
+});
