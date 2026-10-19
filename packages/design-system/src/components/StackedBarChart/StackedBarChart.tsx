@@ -128,6 +128,9 @@ export function StackedBarChart({
       return {
         // The caption is on a line of its own, so only the label can collide.
         width: estimateTextWidth(labelText(category, layout.narrow)),
+        ...(caption === undefined
+          ? {}
+          : { captionWidth: estimateTextWidth(caption) }),
         // A year caption pins the first and last label to the chart's edges.
         anchor:
           caption === undefined
@@ -291,12 +294,13 @@ export function StackedBarChart({
                 );
               })}
 
-              {xLabels.map(({ index, x, anchor }) => {
+              {xLabels.map(({ index, x, anchor, caption }) => {
                 const category = categories[index];
                 if (!category) return null;
-                const caption = layout.narrow
-                  ? category.shortCaption
-                  : undefined;
+                const captionText =
+                  caption === undefined
+                    ? undefined
+                    : categories[caption.index]?.shortCaption;
                 // The baseline of a 16px footnote line sits about 12px down.
                 const baseline = layout.labelTop + 12;
                 return (
@@ -309,14 +313,14 @@ export function StackedBarChart({
                     >
                       {labelText(category, layout.narrow)}
                     </text>
-                    {caption !== undefined && (
+                    {caption !== undefined && captionText !== undefined && (
                       <text
                         className={styles.axisText}
-                        x={x}
+                        x={caption.x}
                         y={baseline + layout.labelLineHeight}
-                        textAnchor={anchor}
+                        textAnchor={caption.anchor}
                       >
-                        {caption}
+                        {captionText}
                       </text>
                     )}
                   </g>
