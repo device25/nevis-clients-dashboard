@@ -1,5 +1,6 @@
 import { Skeleton, Stack } from '@nevis/design-system';
 import { useEffect } from 'react';
+import { SCOPE_NOTE } from '#model';
 
 interface DashboardSkeletonProps {
   /**
@@ -20,7 +21,9 @@ export function DashboardSkeleton({ onShownChange }: DashboardSkeletonProps) {
 
   return (
     <Stack gap={4} aria-busy="true">
-      <Skeleton variant="chart" />
+      {/* The page opens at Company scope, which shows the note under the
+          legend; reserving its height keeps the table from moving (D16). */}
+      <Skeleton variant="chart" footnote={SCOPE_NOTE} />
       <Skeleton variant="table" />
     </Stack>
   );
