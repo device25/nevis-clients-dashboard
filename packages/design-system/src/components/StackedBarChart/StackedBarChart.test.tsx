@@ -357,6 +357,23 @@ describe('StackedBarChart', () => {
     });
   });
 
+  it('still labels every second month on the chart of a 320px viewport, year caption included', () => {
+    measuredWidth = 264;
+    const { container } = renderChart();
+    const labels = Array.from(container.querySelectorAll('svg text')).map(
+      (text) => text.textContent,
+    );
+    expect(labels.slice(5)).toEqual([
+      'Mar',
+      'May',
+      'Jul',
+      'Sep',
+      'Nov',
+      'Jan',
+      '2025',
+    ]);
+  });
+
   it('labels every second month on a wide chart too narrow for twelve spaced labels', () => {
     measuredWidth = 800;
     const { container } = renderChart();

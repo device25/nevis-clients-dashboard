@@ -29,7 +29,7 @@ export function estimateTextWidth(text: string): number {
 }
 
 export interface XLabelItem {
-  /** Width of the widest line of the label, see `estimateTextWidth`. */
+  /** Width of the label's first line, see `estimateTextWidth`. */
   width: number;
   /** `start` and `end` pin the label to the left or right edge of its bar. */
   anchor: LabelAnchor;

@@ -126,10 +126,8 @@ export function StackedBarChart({
     items: categories.map((category, index) => {
       const caption = layout.narrow ? category.shortCaption : undefined;
       return {
-        width: Math.max(
-          estimateTextWidth(labelText(category, layout.narrow)),
-          caption === undefined ? 0 : estimateTextWidth(caption),
-        ),
+        // The caption is on a line of its own, so only the label can collide.
+        width: estimateTextWidth(labelText(category, layout.narrow)),
         // A year caption pins the first and last label to the chart's edges.
         anchor:
           caption === undefined
