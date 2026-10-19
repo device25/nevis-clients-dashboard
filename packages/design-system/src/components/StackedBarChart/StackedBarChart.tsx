@@ -1,5 +1,6 @@
-import { useId, useState, type PointerEvent } from 'react';
+import { useEffect, useId, useState, type PointerEvent } from 'react';
 import { chartColor } from '#tokens';
+import { estimateTextWidth, planXLabels } from './axisLabels';
 import { computeLayout, type ChartLayout } from './layout';
 import { niceScale } from './niceScale';
 import styles from './StackedBarChart.module.scss';
@@ -54,6 +55,10 @@ function valueAt(series: ChartSeries, index: number): number {
   return Math.max(0, series.values[index] ?? 0);
 }
 
+function labelText(category: ChartCategory, narrow: boolean): string {
+  return narrow ? (category.shortLabel ?? category.label) : category.label;
+}
+
 function columnAt(
   clientX: number,
   left: number,
@@ -82,7 +87,10 @@ export function StackedBarChart({
 }: StackedBarChartProps) {
   const clipPrefix = useId().replace(/\W/g, '');
   const [plotRef, width] = useElementWidth<HTMLDivElement>();
-  const [active, setActive] = useState<number | null>(null);
+  const [pointed, setPointed] = useState<number | null>(null);
+  // The column whose tooltip Escape dismissed (WCAG 1.4.13 Dismissible).
+  const [dismissed, setDismissed] = useState<number | null>(null);
+  const active = pointed === dismissed ? null : pointed;
 
   const columns = categories.length;
   const layout = computeLayout({
@@ -100,9 +108,61 @@ export function StackedBarChart({
   const barX = (index: number) =>
     layout.firstBarX + index * (layout.barWidth + layout.barGap);
 
-  function track(event: PointerEvent<SVGSVGElement>) {
+  // Escape works wherever focus is: the tooltip is pointer-only, so focus is
+  // never inside the chart. It is not consumed, so other handlers still run.
+  const tooltipShown = active !== null;
+  useEffect(() => {
+    if (!tooltipShown) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setDismissed(pointed);
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [tooltipShown, pointed]);
+
+  const { placements: xLabels } = planXLabels({
+    items: categories.map((category, index) => {
+      const caption = layout.narrow ? category.shortCaption : undefined;
+      return {
+        // The caption is on a line of its own, so only the label can collide.
+        width: estimateTextWidth(labelText(category, layout.narrow)),
+        // A year caption pins the first and last label to the chart's edges.
+        anchor:
+          caption === undefined
+            ? 'middle'
+            : index === 0
+              ? 'start'
+              : index === columns - 1
+                ? 'end'
+                : 'middle',
+      };
+    }),
+    barX,
+    barWidth: layout.barWidth,
+    chartWidth: width,
+  });
+
+  function track(event: PointerEvent<HTMLDivElement>) {
+    // The tooltip sits inside the plot so the pointer can travel onto it
+    // (WCAG 1.4.13 Hoverable); over it, the column under it does not count.
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-slot="tooltip"]')
+    ) {
+      return;
+    }
     const { left } = event.currentTarget.getBoundingClientRect();
-    setActive(columnAt(event.clientX, left, layout, columns));
+    const column = columnAt(event.clientX, left, layout, columns);
+    setPointed(column);
+    // Moving to another column ends a dismissal.
+    if (column !== dismissed) setDismissed(null);
+  }
+
+  function leave() {
+    setPointed(null);
+    setDismissed(null);
   }
 
   const activeCategory = active === null ? undefined : categories[active];
@@ -120,6 +180,9 @@ export function StackedBarChart({
         ref={plotRef}
         className={styles.plot}
         style={{ height: layout.plotHeight }}
+        onPointerMove={track}
+        onPointerDown={track}
+        onPointerLeave={leave}
       >
         {width > 0 && (
           <svg
@@ -128,11 +191,6 @@ export function StackedBarChart({
             width={width}
             height={layout.plotHeight}
             viewBox={`0 0 ${String(width)} ${String(layout.plotHeight)}`}
-            onPointerMove={track}
-            onPointerDown={track}
-            onPointerLeave={() => {
-              setActive(null);
-            }}
           >
             <g aria-hidden="true">
               <defs>
@@ -216,24 +274,12 @@ export function StackedBarChart({
                 );
               })}
 
-              {categories.map((category, index) => {
+              {xLabels.map(({ index, x, anchor }) => {
+                const category = categories[index];
+                if (!category) return null;
                 const caption = layout.narrow
                   ? category.shortCaption
                   : undefined;
-                const edge =
-                  caption === undefined
-                    ? 'middle'
-                    : index === 0
-                      ? 'start'
-                      : index === columns - 1
-                        ? 'end'
-                        : 'middle';
-                const x =
-                  edge === 'start'
-                    ? barX(index)
-                    : edge === 'end'
-                      ? barX(index) + layout.barWidth
-                      : barX(index) + layout.barWidth / 2;
                 // The baseline of a 16px footnote line sits about 12px down.
                 const baseline = layout.labelTop + 12;
                 return (
@@ -242,18 +288,16 @@ export function StackedBarChart({
                       className={styles.axisText}
                       x={x}
                       y={baseline}
-                      textAnchor={edge}
+                      textAnchor={anchor}
                     >
-                      {layout.narrow
-                        ? (category.shortLabel ?? category.label)
-                        : category.label}
+                      {labelText(category, layout.narrow)}
                     </text>
                     {caption !== undefined && (
                       <text
                         className={styles.axisText}
                         x={x}
                         y={baseline + layout.labelLineHeight}
-                        textAnchor={edge}
+                        textAnchor={anchor}
                       >
                         {caption}
                       </text>

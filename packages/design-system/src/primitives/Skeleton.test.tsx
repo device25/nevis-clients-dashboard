@@ -16,6 +16,27 @@ describe('Skeleton', () => {
     await expectNoAxeViolations(container);
   });
 
+  it('reserves the room of a footnote under the legend, hidden from everyone', () => {
+    const { container } = render(
+      <Skeleton
+        variant="chart"
+        footnote="A note that wraps on narrow screens."
+      />,
+    );
+    const note = screen.getByText('A note that wraps on narrow screens.');
+    expect(note.closest('[aria-hidden="true"]')).toBe(
+      container.firstElementChild,
+    );
+    const legend = container.querySelector('[data-slot="legend"]');
+    expect(legend?.nextElementSibling).toBe(note);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('draws no footnote by default', () => {
+    const { container } = render(<Skeleton variant="chart" />);
+    expect(container.querySelector('[data-slot="footnote"]')).toBeNull();
+  });
+
   it('draws the table card with a header and four rows by default', async () => {
     const { container } = render(<Skeleton variant="table" />);
     expect(container.querySelectorAll('[data-slot="header-row"]')).toHaveLength(
