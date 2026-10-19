@@ -28,17 +28,22 @@ function restrict({ groups = [], paths = [] } = {}) {
           message:
             'Use a layer alias (#name) or a relative path within the module.',
         },
-        ...groups,
+        ...groups.flat(),
       ],
     },
   ];
 }
 
 // A leading '#' starts a comment in gitignore-style patterns, so escape it.
-const layer = (aliases, message) => ({
-  group: aliases.map((alias) => `\\${alias}`),
-  message,
-});
+// Each layer is also reachable as a relative sibling folder, so forbid both.
+// gitignore-style globs never match `../` specifiers, so those use a regex.
+const layer = (aliases, message) => [
+  { group: aliases.map((alias) => `\\${alias}`), message },
+  {
+    regex: `^\\.\\.?/(${aliases.map((a) => a.slice(1)).join('|')})(/|$)`,
+    message,
+  },
+];
 const noReact = [
   { name: 'react', message: 'This layer does not depend on React.' },
   { name: 'react-dom', message: 'This layer does not depend on React.' },
@@ -144,10 +149,6 @@ export default tseslint.config(
     const up = (aliases) => layer(aliases, 'Layers import downward only.');
     return [
       scopes(
-        ['packages/data/src/transport/**', 'packages/data/src/adapter/**'],
-        restrict({ groups: [noUi], paths: noReact }),
-      ),
-      scopes(
         ['packages/data/src/transport/**'],
         restrict({
           groups: [noUi, up(['#adapter', '#queries', '#provider'])],
@@ -190,17 +191,40 @@ export default tseslint.config(
       paths: noReact,
     }),
   ),
-  scopes(
-    ['apps/api/src/data/**'],
-    restrict({
-      groups: [
-        allNevis('@nevis/data'),
-        allNevis('@nevis/design-system'),
-        layer(['#routes'], 'Layers import downward only.'),
-      ],
-      paths: noReact,
-    }),
-  ),
+  ...(() => {
+    const base = [
+      allNevis('@nevis/data'),
+      allNevis('@nevis/design-system'),
+      { group: ['web', 'web/**'], message: 'api never imports web.' },
+    ];
+    const up = (names) => layer(names, 'Layers import downward only.');
+    const server = ['#server'];
+    const app = ['#app'];
+    return [
+      scopes(
+        ['apps/api/src/data/**'],
+        restrict({
+          groups: [
+            ...base,
+            layer(['#routes'], 'Layers import downward only.'),
+            up([...app, ...server]),
+          ],
+          paths: noReact,
+        }),
+      ),
+      scopes(
+        ['apps/api/src/routes/**'],
+        restrict({
+          groups: [...base, up([...app, ...server])],
+          paths: noReact,
+        }),
+      ),
+      scopes(
+        ['apps/api/src/app.ts'],
+        restrict({ groups: [...base, up(server)], paths: noReact }),
+      ),
+    ];
+  })(),
 
   // web: no direct contract or query library; the model is UI-free.
   ...(() => {
