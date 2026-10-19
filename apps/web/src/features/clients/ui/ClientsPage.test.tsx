@@ -1,5 +1,12 @@
 import { DataProvider } from '@nevis/data';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import {
+  fireEvent,
+  isInaccessible,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoAxeViolations } from '#test-support/axe';
 import { delay, http, HttpResponse } from 'msw';
@@ -129,6 +136,17 @@ describe('the loaded dashboard', () => {
       screen.getByRole('img', { name: COMPANY_CHART_NAME }),
     ).toBeInTheDocument();
     expect(screen.getByText(SCOPE_NOTE)).toBeVisible();
+  });
+
+  it('names the chart through a text that is not read a second time', async () => {
+    await renderLoaded();
+
+    const name = screen.getByText(COMPANY_CHART_NAME);
+
+    expect(isInaccessible(name)).toBe(true);
+    expect(
+      screen.getByRole('img', { name: COMPANY_CHART_NAME }),
+    ).toBeInTheDocument();
   });
 
   it('selects Branch 1 on click: five advisers, "By adviser", no scope note', async () => {

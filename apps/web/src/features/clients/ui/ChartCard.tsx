@@ -35,7 +35,11 @@ function Chart({ root, selectedId }: ChartProps) {
 
   return (
     <Stack gap={4}>
-      <VisuallyHidden id={nameId}>{chartAccessibleName(model)}</VisuallyHidden>
+      {/* Hidden from the tree: the chart's name already carries this text,
+          and `aria-labelledby` still resolves it. */}
+      <VisuallyHidden id={nameId} aria-hidden="true">
+        {chartAccessibleName(model)}
+      </VisuallyHidden>
       <Inline gap={4} justify="between" wrap>
         <Text as="div" variant="footnote" tone="secondary">
           {ancestors.map((name) => `${name} › `)}
