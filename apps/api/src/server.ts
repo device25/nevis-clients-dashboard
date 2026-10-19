@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { ClientNodeSchema } from '@nevis/contract';
 import { buildApp } from './app';
 import { readConfig } from './config';
@@ -25,7 +26,7 @@ const app = buildApp({
   fail: config.fail,
   logger: true,
   ...(config.serveWeb && {
-    webRoot: new URL('../../web/dist', import.meta.url).pathname,
+    webRoot: fileURLToPath(new URL('../../web/dist', import.meta.url)),
   }),
 });
 

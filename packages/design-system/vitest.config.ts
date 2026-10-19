@@ -1,9 +1,12 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   resolve: {
     alias: {
-      '#test-support': new URL('../../test-support', import.meta.url).pathname,
+      '#test-support': fileURLToPath(
+        new URL('../../test-support', import.meta.url),
+      ),
     },
   },
   test: {
