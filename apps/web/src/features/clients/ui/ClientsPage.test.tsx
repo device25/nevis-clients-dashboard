@@ -1,5 +1,12 @@
 import { DataProvider } from '@nevis/data';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  fireEvent,
+  isInaccessible,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expectNoAxeViolations } from '#test-support/axe';
 import { delay, http, HttpResponse } from 'msw';
@@ -42,6 +49,36 @@ function legend() {
     .map((item) => item.textContent);
 }
 
+// The plot is 1376px wide; the columns start 50px in and repeat every 111.5px.
+const FEB_X = 60;
+const MAY_X = 400;
+
+/**
+ * Moves the pointer over a column of the chart and returns the rows of the
+ * tooltip it opens, as [label, value], without the month that heads it.
+ */
+function tooltipAt(clientX: number, month: string) {
+  fireEvent.pointerMove(screen.getByRole('img', { name: /a month\.$/ }), {
+    clientX,
+    clientY: 100,
+  });
+  // The month also labels an axis and heads a table column; the tooltip's
+  // title is the third one.
+  const title = screen
+    .getAllByText(month)
+    .find((element) => element.closest('svg, [role="treegrid"]') === null);
+  const tooltip = title?.parentElement;
+  if (!tooltip) throw new Error(`No tooltip for ${month}`);
+  return Array.from(tooltip.children)
+    .slice(1)
+    .filter((line) => line.textContent !== '')
+    .map((line) =>
+      Array.from(line.children)
+        .map((part) => part.textContent)
+        .filter((text) => text !== ''),
+    );
+}
+
 const COMPANY_CHART_NAME =
   'Company, by branch, Feb 2024 to Jan 2025, between 250 and 350 a month.';
 const SCOPE_NOTE =
@@ -58,7 +95,7 @@ describe('while the data is loading', () => {
     return renderPage();
   }
 
-  it('shows the heading and a busy dashboard that announces "Loading clients"', () => {
+  it('shows the heading and a busy dashboard, and announces "Loading clients" in a status outside it', () => {
     renderPending();
 
     expect(
@@ -66,9 +103,35 @@ describe('while the data is loading', () => {
     ).toBeVisible();
     const status = screen.getByRole('status');
     expect(status).toHaveTextContent('Loading clients');
-    expect(status.closest('[aria-busy="true"]')).not.toBeNull();
+    expect(status.closest('[aria-busy]')).toBeNull();
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
     expect(screen.queryByRole('treegrid')).not.toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('keeps the same, now empty, status element once the data has arrived', async () => {
+    let respond: () => void = () => undefined;
+    const arrived = new Promise<void>((resolve) => {
+      respond = resolve;
+    });
+    server.use(
+      http.get(CLIENTS_URL, async () => {
+        await arrived;
+        return HttpResponse.json(clientsPayload);
+      }),
+    );
+    renderPage();
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent('Loading clients');
+
+    respond();
+    await screen.findByRole('treegrid', { name: 'Clients' });
+
+    expect(screen.getByRole('status')).toBe(status);
+    await waitFor(() => {
+      expect(status).toBeEmptyDOMElement();
+    });
+    expect(document.querySelector('[aria-busy]')).toBeNull();
   });
 
   it('has no axe violations', async () => {
@@ -90,7 +153,7 @@ describe('the loaded dashboard', () => {
     expect(row('Branch 1')).toHaveAttribute('aria-expanded', 'false');
     expect(row('Branch 1')).toHaveAttribute('aria-selected', 'false');
     expect(row('Branch 2')).not.toHaveAttribute('aria-expanded');
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('shows the Company scope: path, grouping, three branches, name and scope note', async () => {
@@ -103,6 +166,17 @@ describe('the loaded dashboard', () => {
       screen.getByRole('img', { name: COMPANY_CHART_NAME }),
     ).toBeInTheDocument();
     expect(screen.getByText(SCOPE_NOTE)).toBeVisible();
+  });
+
+  it('names the chart through a text that is not read a second time', async () => {
+    await renderLoaded();
+
+    const name = screen.getByText(COMPANY_CHART_NAME);
+
+    expect(isInaccessible(name)).toBe(true);
+    expect(
+      screen.getByRole('img', { name: COMPANY_CHART_NAME }),
+    ).toBeInTheDocument();
   });
 
   it('selects Branch 1 on click: five advisers, "By adviser", no scope note', async () => {
@@ -201,26 +275,50 @@ describe('the loaded dashboard', () => {
     expect(february).not.toHaveAccessibleDescription();
   });
 
-  it('draws the tooltip with the children total and, where it differs, the reported total', async () => {
+  it('shows the payload values of May 2024 in the tooltip at Company scope', async () => {
     await renderLoaded();
-    const svg = screen.getByRole('img', { name: COMPANY_CHART_NAME });
 
-    // The May 2024 column starts 50 + 3 x 111.5px from the left of the plot.
-    fireEvent.pointerMove(svg, { clientX: 400, clientY: 100 });
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([
+      ['Branch 1', '156'],
+      ['Branch 2', '87'],
+      ['Branch 3', '36'],
+      ['Children total', '279'],
+      ['Reported total', '301'],
+    ]);
+  });
 
-    expect(screen.getByText('Children total').parentElement).toHaveTextContent(
-      '279',
-    );
-    expect(screen.getByText('Reported total').parentElement).toHaveTextContent(
-      '301',
-    );
+  it('leaves the reported total out where it equals the children total', async () => {
+    await renderLoaded();
 
-    fireEvent.pointerMove(svg, { clientX: 60, clientY: 100 });
+    expect(tooltipAt(FEB_X, 'Feb 2024')).toEqual([
+      ['Branch 1', '147'],
+      ['Branch 2', '76'],
+      ['Branch 3', '27'],
+      ['Children total', '250'],
+    ]);
+  });
 
-    expect(screen.getByText('Children total').parentElement).toHaveTextContent(
-      '250',
-    );
-    expect(screen.queryByText('Reported total')).not.toBeInTheDocument();
+  it('shows the payload values of May 2024 in the tooltip at Anna Blackwood', async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    row('Company').focus();
+    await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown} ');
+
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([
+      ['Existing clients', '28'],
+      ['New organic', '1'],
+      ['New paid', '1'],
+      ['Children total', '30'],
+      ['Reported total', '31'],
+    ]);
+  });
+
+  it('shows only the series in the tooltip at a leaf, with no totals', async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    await user.click(row('Branch 2'));
+
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([['Branch 2', '87']]);
   });
 
   it('has no axe violations at Company scope', async () => {
@@ -229,7 +327,7 @@ describe('the loaded dashboard', () => {
     await expectNoAxeViolations(container);
   });
 
-  it('has no axe violations at Anna Blackwood scope with the table fully expanded', async () => {
+  it('has no axe violations at Anna Blackwood scope with Branch 1 expanded', async () => {
     const user = userEvent.setup();
     const { container } = await renderLoaded();
 
@@ -237,5 +335,72 @@ describe('the loaded dashboard', () => {
     await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown} ');
 
     await expectNoAxeViolations(container);
+  });
+
+  describe('with Branch 1 and Anna Blackwood expanded and Anna selected', () => {
+    async function renderExpanded() {
+      const user = userEvent.setup();
+      const view = await renderLoaded();
+      row('Company').focus();
+      await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown}{ArrowRight} ');
+      return view;
+    }
+
+    it('gives every one of the 12 rows its level, set size and position', async () => {
+      await renderExpanded();
+
+      const rows = screen
+        .getAllByRole('row')
+        .filter((r) => r.getAttribute('aria-label') !== null);
+
+      expect(
+        rows.map((r) => [
+          r.getAttribute('aria-label'),
+          r.getAttribute('aria-level'),
+          r.getAttribute('aria-setsize'),
+          r.getAttribute('aria-posinset'),
+        ]),
+      ).toEqual([
+        ['Company', '1', '1', '1'],
+        ['Branch 1', '2', '3', '1'],
+        ['Anna Blackwood', '3', '5', '1'],
+        ['Existing clients', '4', '3', '1'],
+        ['New organic', '4', '3', '2'],
+        ['New paid', '4', '3', '3'],
+        ['James Walker', '3', '5', '2'],
+        ['Maria Gutierrez', '3', '5', '3'],
+        ['Robert Chen', '3', '5', '4'],
+        ['Sarah Smith', '3', '5', '5'],
+        ['Branch 2', '2', '3', '2'],
+        ['Branch 3', '2', '3', '3'],
+      ]);
+    });
+
+    it('marks the three parents expanded and none of the nine leaves', async () => {
+      await renderExpanded();
+
+      for (const name of ['Company', 'Branch 1', 'Anna Blackwood']) {
+        expect(row(name)).toHaveAttribute('aria-expanded', 'true');
+      }
+      for (const name of [
+        'Branch 2',
+        'Branch 3',
+        'James Walker',
+        'Maria Gutierrez',
+        'Robert Chen',
+        'Sarah Smith',
+        'Existing clients',
+        'New organic',
+        'New paid',
+      ]) {
+        expect(row(name)).not.toHaveAttribute('aria-expanded');
+      }
+    });
+
+    it('has no axe violations', async () => {
+      const { container } = await renderExpanded();
+
+      await expectNoAxeViolations(container);
+    });
   });
 });

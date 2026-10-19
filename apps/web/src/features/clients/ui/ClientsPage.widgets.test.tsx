@@ -117,4 +117,53 @@ describe('a widget that fails to render', () => {
       'true',
     );
   });
+
+  it('moves focus to the "Clients" heading when the chart comes back', async () => {
+    const user = userEvent.setup();
+    failing.chart = true;
+    renderPage();
+    const chart = await screen.findByRole('region', { name: 'Chart' });
+
+    failing.chart = false;
+    await user.click(within(chart).getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Clients' }),
+      ).toHaveFocus();
+    });
+  });
+
+  it('moves focus to the "Clients" heading when the table comes back', async () => {
+    const user = userEvent.setup();
+    failing.table = true;
+    renderPage();
+    const table = await screen.findByRole('region', { name: 'Table' });
+
+    failing.table = false;
+    await user.click(within(table).getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Clients' }),
+      ).toHaveFocus();
+    });
+  });
+
+  it('moves focus to the new error heading when the widget fails again', async () => {
+    const user = userEvent.setup();
+    failing.chart = true;
+    renderPage();
+    const chart = await screen.findByRole('region', { name: 'Chart' });
+
+    await user.click(within(chart).getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => {
+      expect(
+        within(chart).getByRole('heading', {
+          name: 'The chart could not be displayed',
+        }),
+      ).toHaveFocus();
+    });
+  });
 });

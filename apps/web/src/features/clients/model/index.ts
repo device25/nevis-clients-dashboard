@@ -4,7 +4,7 @@ export {
   showsScopeNote,
   toChartModel,
   type ChartModel,
-  type ChartSeries,
+  type ScopeSeries,
   type Grouping,
   type MonthlyValues,
 } from './chart';

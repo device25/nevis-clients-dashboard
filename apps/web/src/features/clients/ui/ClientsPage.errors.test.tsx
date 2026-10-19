@@ -130,20 +130,15 @@ describe('"Try again"', () => {
 });
 
 describe('the data boundary', () => {
-  const MAX_SILENT_RETRIES = 3;
-
-  it('retries a cancelled request without showing an error', async () => {
-    let attempts = 0;
-    function CancelledTwice() {
-      attempts += 1;
-      if (attempts <= 2) throw new DataError('aborted');
-      return <p>Loaded</p>;
+  it('renders nothing for a cancelled request: no alert, no message, no button', async () => {
+    function Cancelled(): never {
+      throw new DataError('aborted');
     }
 
-    render(
+    const { container } = render(
       <TestDataProvider error={new DataError('aborted')}>
         <DataBoundary onRetry={() => undefined}>
-          <CancelledTwice />
+          <Cancelled />
         </DataBoundary>
       </TestDataProvider>,
       // React retries a failed concurrent render once by itself and reports
@@ -151,29 +146,12 @@ describe('the data boundary', () => {
       { onRecoverableError: () => undefined },
     );
 
-    expect(await screen.findByText('Loaded')).toBeVisible();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-
-  it('gives up after a few silent retries and shows the connection message', async () => {
-    let renders = 0;
-    function AlwaysCancelled(): never {
-      renders += 1;
-      throw new DataError('aborted');
-    }
-
-    render(
-      <TestDataProvider error={new DataError('aborted')}>
-        <DataBoundary onRetry={() => undefined}>
-          <AlwaysCancelled />
-        </DataBoundary>
-      </TestDataProvider>,
-    );
-
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      "Can't reach the server. Check your connection and try again.",
-    );
-    expect(renders).toBeGreaterThanOrEqual(MAX_SILENT_RETRIES);
+    // Long enough for any delayed retry to have shown something.
+    await expect(
+      screen.findByRole('alert', {}, { timeout: 300 }),
+    ).rejects.toThrow();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('lets an error that is not a DataError reach the boundary above', () => {
