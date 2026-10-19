@@ -36,6 +36,7 @@ cells are `gridcell`s. Single-select: `aria-multiselectable` is absent.
 | `aria-expanded` | `true`/`false` only on rows with children; absent on every leaf |
 | `aria-selected` | `true` on the selected row, `false` on every other body row |
 | `tabindex` | `0` on exactly one element of the grid (the focused row or cell), `-1` on every other body row and cell; header cells have none |
+| `aria-readonly` | `true` on the treegrid: no cell is editable |
 
 Collapsed descendants are not rendered. `aria-rowcount` and `aria-rowindex`
 are not used.

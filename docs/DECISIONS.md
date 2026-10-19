@@ -244,6 +244,15 @@ the table still switch at a 640px viewport as `DESIGN.md` says.
 **Why:** labels must not overlap at any width, and only the chart knows its
 own width.
 
+Month labels, recorded after task F1: the chart estimates each label's width
+with room for WCAG 1.4.12 text spacing, and labels every n-th month, counted
+back from the last, at the smallest n that keeps neighbouring labels 4px
+apart. All twelve full labels show from about 1030px of chart width (a
+1440px viewport). Every second month is labelled between 760px and 1030px,
+and below about 418px in the narrow geometry (the 320–375px viewports). The
+table and the tooltip still name every month. Y-axis labels may extend into
+the card's padding instead of being clipped.
+
 ### D22. The data package re-exports the months
 
 Recorded by the orchestrator on 2026-10-19, before task M1. `apps/web` may
