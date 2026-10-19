@@ -120,13 +120,16 @@ for (const width of [320, 375]) {
     const card = await page
       .getByRole('region', { name: 'Chart' })
       .boundingBox();
-    // Month labels, and the year captions under the first and last month.
+    // The month labels and, on a narrow chart, the year captions under the
+    // first and last label drawn.
     const labels = page
       .getByRole('img', { name: /^Company, by branch/ })
       .locator('text')
       .filter({ hasText: /^([A-Z][a-z]{2}( \d{4})?|\d{4})$/ });
     const count = await labels.count();
-    expect(count).toBeGreaterThanOrEqual(2);
+    expect(await labels.allTextContents()).toEqual(
+      expect.arrayContaining(['2024', '2025']),
+    );
     const boxes = [];
     for (let index = 0; index < count; index += 1) {
       const box = await labels.nth(index).boundingBox();
@@ -153,6 +156,25 @@ for (const width of [320, 375]) {
     }
   });
 }
+
+test('names both years in the full month labels at 1440px', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDashboard(page);
+
+  const labels = await page
+    .getByRole('img', { name: /^Company, by branch/ })
+    .locator('text')
+    .allTextContents();
+
+  expect(labels).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/ 2024$/),
+      expect.stringMatching(/ 2025$/),
+    ]),
+  );
+});
 
 test('does not scroll horizontally at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
