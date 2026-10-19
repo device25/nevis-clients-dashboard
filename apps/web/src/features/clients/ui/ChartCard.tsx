@@ -17,12 +17,17 @@ import {
 import { CATEGORIES } from './categories';
 import { WidgetBoundary } from './WidgetBoundary';
 
-interface ChartCardProps {
+interface ChartProps {
   root: HierarchyNode;
   selectedId: string;
 }
 
-function Chart({ root, selectedId }: ChartCardProps) {
+interface ChartCardProps extends ChartProps {
+  /** The chart is back after a failure and "Try again". */
+  onRecovered: () => void;
+}
+
+function Chart({ root, selectedId }: ChartProps) {
   const nameId = useId();
   const model = toChartModel(root, selectedId);
   const current = model.scopePath.at(-1);
@@ -68,7 +73,7 @@ function Chart({ root, selectedId }: ChartCardProps) {
 }
 
 /** The chart follows the selected row and nothing else (D3). */
-export function ChartCard({ root, selectedId }: ChartCardProps) {
+export function ChartCard({ root, selectedId, onRecovered }: ChartCardProps) {
   const headingId = useId();
   return (
     <Surface as="section" padding="card" aria-labelledby={headingId}>
@@ -78,6 +83,7 @@ export function ChartCard({ root, selectedId }: ChartCardProps) {
       <WidgetBoundary
         title="The chart could not be displayed"
         message="The table still shows every figure."
+        onRecovered={onRecovered}
       >
         <Chart root={root} selectedId={selectedId} />
       </WidgetBoundary>

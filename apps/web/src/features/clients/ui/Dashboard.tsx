@@ -7,13 +7,15 @@ import { TableCard } from './TableCard';
 interface DashboardProps {
   /** Called once the dashboard has mounted with its data. */
   onLoaded: () => void;
+  /** Called when a widget is back after a failure and "Try again". */
+  onWidgetRecovered: () => void;
 }
 
 /**
  * Owns what the user has done: which rows are open and which is selected.
  * The two never affect each other (D3).
  */
-export function Dashboard({ onLoaded }: DashboardProps) {
+export function Dashboard({ onLoaded, onWidgetRecovered }: DashboardProps) {
   const root = useClientsTree();
   const tree = useTreeState({ defaultExpandedIds: [root.id] });
   const [selectedId, setSelectedId] = useState(root.id);
@@ -24,12 +26,17 @@ export function Dashboard({ onLoaded }: DashboardProps) {
 
   return (
     <Stack gap={4}>
-      <ChartCard root={root} selectedId={selectedId} />
+      <ChartCard
+        root={root}
+        selectedId={selectedId}
+        onRecovered={onWidgetRecovered}
+      />
       <TableCard
         root={root}
         tree={tree}
         selectedId={selectedId}
         onSelect={setSelectedId}
+        onRecovered={onWidgetRecovered}
       />
     </Stack>
   );

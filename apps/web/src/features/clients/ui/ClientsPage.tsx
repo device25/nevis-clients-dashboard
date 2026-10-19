@@ -19,6 +19,11 @@ export function ClientsPage() {
     heading.current?.focus();
   }
 
+  // The same for a widget that was retried on its own (D24).
+  function handleWidgetRecovered() {
+    heading.current?.focus();
+  }
+
   return (
     <Stack as="main" padding="page" gap={4}>
       <Heading level={1} id={CLIENTS_HEADING_ID} tabIndex={-1} ref={heading}>
@@ -30,7 +35,10 @@ export function ClientsPage() {
         }}
       >
         <Suspense fallback={<DashboardSkeleton />}>
-          <Dashboard onLoaded={handleLoaded} />
+          <Dashboard
+            onLoaded={handleLoaded}
+            onWidgetRecovered={handleWidgetRecovered}
+          />
         </Suspense>
       </DataBoundary>
     </Stack>

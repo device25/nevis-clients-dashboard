@@ -18,14 +18,19 @@ const COLUMNS: readonly TreeGridColumn[] = MONTHS.map((month) => ({
   header: month.label,
 }));
 
-interface TableCardProps {
+interface TableProps {
   root: HierarchyNode;
   tree: TreeState;
   selectedId: string;
   onSelect: (id: string) => void;
 }
 
-function Table({ root, tree, selectedId, onSelect }: TableCardProps) {
+interface TableCardProps extends TableProps {
+  /** The table is back after a failure and "Try again". */
+  onRecovered: () => void;
+}
+
+function Table({ root, tree, selectedId, onSelect }: TableProps) {
   const mismatches = findMismatches(root);
 
   return (
@@ -71,7 +76,7 @@ function Table({ root, tree, selectedId, onSelect }: TableCardProps) {
 }
 
 /** Expansion and selection are owned by the dashboard; this only draws them. */
-export function TableCard(props: TableCardProps) {
+export function TableCard({ onRecovered, ...table }: TableCardProps) {
   const headingId = useId();
   return (
     <Surface as="section" aria-labelledby={headingId}>
@@ -81,8 +86,9 @@ export function TableCard(props: TableCardProps) {
       <WidgetBoundary
         title="The table could not be displayed"
         message="The chart is not affected."
+        onRecovered={onRecovered}
       >
-        <Table {...props} />
+        <Table {...table} />
       </WidgetBoundary>
     </Surface>
   );
