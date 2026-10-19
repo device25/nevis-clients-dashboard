@@ -56,6 +56,9 @@ function Chart({ root, selectedId }: ChartProps) {
         series={model.series}
         labelledBy={nameId}
         tooltipExtra={(index) => {
+          // Both totals describe a node with children; a leaf has only its
+          // own series (D24).
+          if (!model.hasChildren) return [];
           const childrenTotal = model.childTotals[index] ?? 0;
           const reported = model.reported[index] ?? 0;
           return [

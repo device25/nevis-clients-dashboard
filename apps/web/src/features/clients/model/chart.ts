@@ -18,6 +18,8 @@ export interface ChartModel {
   readonly scopePath: readonly string[];
   readonly grouping: Grouping;
   readonly series: readonly ChartSeries[];
+  /** False at a leaf, where the one series is the node's own values. */
+  readonly hasChildren: boolean;
   /** Sum of the series in each month: the height of each stack. */
   readonly childTotals: MonthlyValues;
   /** The scope node's own reported values (D1). */
@@ -123,6 +125,7 @@ export function toChartModel(
     scopePath: path.map((step) => step.name),
     grouping: groupingOf(node),
     series,
+    hasChildren: node.children.length > 0,
     childTotals: perMonth((monthIndex) =>
       series.reduce((sum, s) => sum + (s.values[monthIndex] ?? 0), 0),
     ),

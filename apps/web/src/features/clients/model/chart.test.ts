@@ -109,6 +109,15 @@ describe('toChartModel', () => {
     expect(model.series[0]?.colorIndex).toBe(2);
   });
 
+  it('tells a scope with children from a leaf', () => {
+    expect(toChartModel(COMPANY, COMPANY.id).hasChildren).toBe(true);
+    expect(toChartModel(COMPANY, ANNA.id).hasChildren).toBe(true);
+    expect(toChartModel(COMPANY, BRANCH_2.id).hasChildren).toBe(false);
+    expect(
+      toChartModel(COMPANY, 'abbf873a-a0eb-46b8-b4cf-dc58e5f7a2d7').hasChildren,
+    ).toBe(false);
+  });
+
   it('falls back to the root scope for an unknown id', () => {
     expect(toChartModel(COMPANY, 'nobody')).toEqual(
       toChartModel(COMPANY, COMPANY.id),

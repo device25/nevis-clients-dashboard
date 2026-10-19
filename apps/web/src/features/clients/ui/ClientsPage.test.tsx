@@ -49,6 +49,36 @@ function legend() {
     .map((item) => item.textContent);
 }
 
+// The plot is 1376px wide; the columns start 50px in and repeat every 111.5px.
+const FEB_X = 60;
+const MAY_X = 400;
+
+/**
+ * Moves the pointer over a column of the chart and returns the rows of the
+ * tooltip it opens, as [label, value], without the month that heads it.
+ */
+function tooltipAt(clientX: number, month: string) {
+  fireEvent.pointerMove(screen.getByRole('img', { name: /a month\.$/ }), {
+    clientX,
+    clientY: 100,
+  });
+  // The month also labels an axis and heads a table column; the tooltip's
+  // title is the third one.
+  const title = screen
+    .getAllByText(month)
+    .find((element) => element.closest('svg, [role="treegrid"]') === null);
+  const tooltip = title?.parentElement;
+  if (!tooltip) throw new Error(`No tooltip for ${month}`);
+  return Array.from(tooltip.children)
+    .slice(1)
+    .filter((line) => line.textContent !== '')
+    .map((line) =>
+      Array.from(line.children)
+        .map((part) => part.textContent)
+        .filter((text) => text !== ''),
+    );
+}
+
 const COMPANY_CHART_NAME =
   'Company, by branch, Feb 2024 to Jan 2025, between 250 and 350 a month.';
 const SCOPE_NOTE =
@@ -245,26 +275,50 @@ describe('the loaded dashboard', () => {
     expect(february).not.toHaveAccessibleDescription();
   });
 
-  it('draws the tooltip with the children total and, where it differs, the reported total', async () => {
+  it('shows the payload values of May 2024 in the tooltip at Company scope', async () => {
     await renderLoaded();
-    const svg = screen.getByRole('img', { name: COMPANY_CHART_NAME });
 
-    // The May 2024 column starts 50 + 3 x 111.5px from the left of the plot.
-    fireEvent.pointerMove(svg, { clientX: 400, clientY: 100 });
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([
+      ['Branch 1', '156'],
+      ['Branch 2', '87'],
+      ['Branch 3', '36'],
+      ['Children total', '279'],
+      ['Reported total', '301'],
+    ]);
+  });
 
-    expect(screen.getByText('Children total').parentElement).toHaveTextContent(
-      '279',
-    );
-    expect(screen.getByText('Reported total').parentElement).toHaveTextContent(
-      '301',
-    );
+  it('leaves the reported total out where it equals the children total', async () => {
+    await renderLoaded();
 
-    fireEvent.pointerMove(svg, { clientX: 60, clientY: 100 });
+    expect(tooltipAt(FEB_X, 'Feb 2024')).toEqual([
+      ['Branch 1', '147'],
+      ['Branch 2', '76'],
+      ['Branch 3', '27'],
+      ['Children total', '250'],
+    ]);
+  });
 
-    expect(screen.getByText('Children total').parentElement).toHaveTextContent(
-      '250',
-    );
-    expect(screen.queryByText('Reported total')).not.toBeInTheDocument();
+  it('shows the payload values of May 2024 in the tooltip at Anna Blackwood', async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    row('Company').focus();
+    await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown} ');
+
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([
+      ['Existing clients', '28'],
+      ['New organic', '1'],
+      ['New paid', '1'],
+      ['Children total', '30'],
+      ['Reported total', '31'],
+    ]);
+  });
+
+  it('shows only the series in the tooltip at a leaf, with no totals', async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    await user.click(row('Branch 2'));
+
+    expect(tooltipAt(MAY_X, 'May 2024')).toEqual([['Branch 2', '87']]);
   });
 
   it('has no axe violations at Company scope', async () => {
