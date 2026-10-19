@@ -80,12 +80,14 @@ describe('TestDataProvider', () => {
   });
 
   it('throws the given error to the nearest boundary, without a request', async () => {
+    // The boundary sits inside the provider, so the provider stays mounted
+    // (and its effects run) while the error shows.
     render(
-      <Boundary>
-        <TestDataProvider error={new DataError('http', { status: 503 })}>
+      <TestDataProvider error={new DataError('http', { status: 503 })}>
+        <Boundary>
           <Name />
-        </TestDataProvider>
-      </Boundary>,
+        </Boundary>
+      </TestDataProvider>,
     );
 
     expect(screen.getByRole('alert').textContent).toBe('http 503');
