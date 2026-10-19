@@ -204,8 +204,10 @@ anything else reaches the root boundary.
 ### D18. Test layers
 
 Vitest and Testing Library for packages and the app, MSW for the network,
-one Playwright test against the real server, GitHub Actions running all of it.
-**Why:** unit and component tests prove the parts, one end-to-end test proves
+one Playwright spec against the real server, GitHub Actions running all of it.
+The spec grew from one test to eight during the audit fixes (layout shift,
+narrow widths); it is still one file against one server.
+**Why:** unit and component tests prove the parts, one end-to-end spec proves
 they work together, and CI proves a clean install works for someone else.
 
 ### D19. Deployment
