@@ -16,6 +16,10 @@
 
   svg {
     display: block;
+    // A y label wider than its column, for example under the text-spacing
+    // styles of WCAG 1.4.12, grows to the left into the card's padding
+    // instead of being clipped at the svg's edge.
+    overflow: visible;
   }
 }
 

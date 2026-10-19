@@ -325,7 +325,8 @@ describe('StackedBarChart', () => {
       expect(number(first, 'height')).toBeCloseTo(41.5, 2);
     });
 
-    it('shows month names only, with the year under the first and last column', () => {
+    it('shows month names only, with the year under the first and last column, when they fit', () => {
+      measuredWidth = 600;
       const { container } = renderChart();
       const labels = Array.from(container.querySelectorAll('svg text')).map(
         (text) => text.textContent,
@@ -338,6 +339,38 @@ describe('StackedBarChart', () => {
         '2025',
       ]);
     });
+
+    it('labels every second month, counted back from the last, when they would overlap', () => {
+      const { container } = renderChart();
+      const labels = Array.from(container.querySelectorAll('svg text')).map(
+        (text) => text.textContent,
+      );
+      expect(labels.slice(5)).toEqual([
+        'Mar',
+        'May',
+        'Jul',
+        'Sep',
+        'Nov',
+        'Jan',
+        '2025',
+      ]);
+    });
+  });
+
+  it('labels every second month on a wide chart too narrow for twelve spaced labels', () => {
+    measuredWidth = 800;
+    const { container } = renderChart();
+    const labels = Array.from(container.querySelectorAll('svg text')).map(
+      (text) => text.textContent,
+    );
+    expect(labels.slice(5)).toEqual([
+      'Mar 2024',
+      'May 2024',
+      'Jul 2024',
+      'Sep 2024',
+      'Nov 2024',
+      'Jan 2025',
+    ]);
   });
 
   it('draws nothing but the legend before it has a width', () => {

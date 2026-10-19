@@ -20,4 +20,6 @@ export const CHART = {
   barRowPadding: 12,
   labelGap: 12,
   labelLineHeight: 16,
+  /** Footnote size, which the label width budget is a multiple of. */
+  labelFontSize: 12,
 } as const;

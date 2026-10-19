@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type PointerEvent } from 'react';
 import { chartColor } from '#tokens';
+import { estimateTextWidth, planXLabels } from './axisLabels';
 import { computeLayout, type ChartLayout } from './layout';
 import { niceScale } from './niceScale';
 import styles from './StackedBarChart.module.scss';
@@ -52,6 +53,10 @@ const TOOLTIP_OFFSET = 8;
 
 function valueAt(series: ChartSeries, index: number): number {
   return Math.max(0, series.values[index] ?? 0);
+}
+
+function labelText(category: ChartCategory, narrow: boolean): string {
+  return narrow ? (category.shortLabel ?? category.label) : category.label;
 }
 
 function columnAt(
@@ -116,6 +121,30 @@ export function StackedBarChart({
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [tooltipShown, pointed]);
+
+  const { placements: xLabels } = planXLabels({
+    items: categories.map((category, index) => {
+      const caption = layout.narrow ? category.shortCaption : undefined;
+      return {
+        width: Math.max(
+          estimateTextWidth(labelText(category, layout.narrow)),
+          caption === undefined ? 0 : estimateTextWidth(caption),
+        ),
+        // A year caption pins the first and last label to the chart's edges.
+        anchor:
+          caption === undefined
+            ? 'middle'
+            : index === 0
+              ? 'start'
+              : index === columns - 1
+                ? 'end'
+                : 'middle',
+      };
+    }),
+    barX,
+    barWidth: layout.barWidth,
+    chartWidth: width,
+  });
 
   function track(event: PointerEvent<HTMLDivElement>) {
     // The tooltip sits inside the plot so the pointer can travel onto it
@@ -247,24 +276,12 @@ export function StackedBarChart({
                 );
               })}
 
-              {categories.map((category, index) => {
+              {xLabels.map(({ index, x, anchor }) => {
+                const category = categories[index];
+                if (!category) return null;
                 const caption = layout.narrow
                   ? category.shortCaption
                   : undefined;
-                const edge =
-                  caption === undefined
-                    ? 'middle'
-                    : index === 0
-                      ? 'start'
-                      : index === columns - 1
-                        ? 'end'
-                        : 'middle';
-                const x =
-                  edge === 'start'
-                    ? barX(index)
-                    : edge === 'end'
-                      ? barX(index) + layout.barWidth
-                      : barX(index) + layout.barWidth / 2;
                 // The baseline of a 16px footnote line sits about 12px down.
                 const baseline = layout.labelTop + 12;
                 return (
@@ -273,18 +290,16 @@ export function StackedBarChart({
                       className={styles.axisText}
                       x={x}
                       y={baseline}
-                      textAnchor={edge}
+                      textAnchor={anchor}
                     >
-                      {layout.narrow
-                        ? (category.shortLabel ?? category.label)
-                        : category.label}
+                      {labelText(category, layout.narrow)}
                     </text>
                     {caption !== undefined && (
                       <text
                         className={styles.axisText}
                         x={x}
                         y={baseline + layout.labelLineHeight}
-                        textAnchor={edge}
+                        textAnchor={anchor}
                       >
                         {caption}
                       </text>
