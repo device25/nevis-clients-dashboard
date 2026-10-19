@@ -144,6 +144,10 @@ export function StackedBarChart({
     chartWidth: width,
   });
 
+  const flipped =
+    active !== null &&
+    barX(active) + layout.barWidth / 2 > (width + layout.groupLeft) / 2;
+
   function track(event: PointerEvent<HTMLDivElement>) {
     // The tooltip sits inside the plot so the pointer can travel onto it
     // (WCAG 1.4.13 Hoverable); over it, the column under it does not count.
@@ -155,6 +159,19 @@ export function StackedBarChart({
     }
     const { left } = event.currentTarget.getBoundingClientRect();
     const column = columnAt(event.clientX, left, layout, columns);
+    // The tooltip stands TOOLTIP_OFFSET from its bar. On a narrow chart a
+    // column's own zone, half the bar gap, is shorter than that, so the strip
+    // between bar and tooltip belongs to the active column too; otherwise the
+    // pointer would cross the neighbours' columns on its way to the tooltip.
+    if (active !== null && column !== active) {
+      const x = event.clientX - left;
+      const start = barX(active);
+      const end = start + layout.barWidth;
+      const inStrip = flipped
+        ? x >= start - TOOLTIP_OFFSET && x < start
+        : x >= end && x <= end + TOOLTIP_OFFSET;
+      if (inStrip) return;
+    }
     setPointed(column);
     // Moving to another column ends a dismissal.
     if (column !== dismissed) setDismissed(null);
@@ -170,7 +187,7 @@ export function StackedBarChart({
   const tooltipPosition =
     active === null
       ? null
-      : barX(active) + layout.barWidth / 2 > (width + layout.groupLeft) / 2
+      : flipped
         ? { right: width - barX(active) + TOOLTIP_OFFSET }
         : { left: barX(active) + layout.barWidth + TOOLTIP_OFFSET };
 

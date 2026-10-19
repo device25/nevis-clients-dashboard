@@ -289,6 +289,49 @@ describe('StackedBarChart', () => {
     outside.remove();
   });
 
+  describe.each([
+    // Wide: 87.5px bars 24px apart from x = 50. Narrow (319px): 20.5833px bars
+    // 4px apart from x = 28, where the 8px tooltip offset is wider than the
+    // 2px that belong to a column on each side of its bar.
+    { name: 'wide', width: 1376, first: 50, bar: 87.5, gap: 24 },
+    { name: 'narrow', width: 319, first: 28, bar: 247 / 12, gap: 4 },
+  ])('on a $name chart', ({ width, first, bar, gap }) => {
+    const barLeft = (index: number) => first + index * (bar + gap);
+
+    it('keeps the month while the pointer walks from a column to its tooltip on the right, 1px at a time', () => {
+      measuredWidth = width;
+      const { container } = renderChart();
+      hover(container, barLeft(3) + bar / 2);
+      for (
+        let x = Math.ceil(barLeft(3) + bar / 2);
+        x <= barLeft(3) + bar + 8;
+        x += 1
+      ) {
+        hover(container, x);
+        expect(tooltip(container), `at x=${String(x)}`).toHaveTextContent(
+          'May 2024',
+        );
+      }
+    });
+
+    it('keeps the month while the pointer walks from a column to its tooltip on the left, 1px at a time', () => {
+      measuredWidth = width;
+      const { container } = renderChart();
+      hover(container, barLeft(9) + bar / 2);
+      expect(tooltip(container)?.style.right).not.toBe('');
+      for (
+        let x = Math.floor(barLeft(9) + bar / 2);
+        x >= barLeft(9) - 8;
+        x -= 1
+      ) {
+        hover(container, x);
+        expect(tooltip(container), `at x=${String(x)}`).toHaveTextContent(
+          'Nov 2024',
+        );
+      }
+    });
+  });
+
   it('omits the divider when there are no extra lines', () => {
     const { container } = renderChart();
     hover(container, columnCentre(0));
