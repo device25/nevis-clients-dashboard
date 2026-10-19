@@ -256,6 +256,9 @@ export function TreeGrid<T>({
         // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role -- a native table with the treegrid role is the markup of ACCESSIBILITY.md and of the APG treegrid example
         role="treegrid"
         aria-labelledby={labelledBy}
+        // Without it browsers expose every gridcell as editable, and some
+        // screen readers announce them so; the grid has no editing.
+        aria-readonly="true"
         className={styles.table}
         style={{ '--treegrid-columns': columns.length } as CSSProperties}
         onKeyDown={handleKeyDown}

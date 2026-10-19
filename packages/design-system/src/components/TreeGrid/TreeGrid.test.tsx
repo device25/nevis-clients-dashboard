@@ -25,6 +25,14 @@ describe('TreeGrid structure', () => {
     expect(table).not.toHaveAttribute('aria-multiselectable');
   });
 
+  it('is read-only, so that no cell is announced as editable', () => {
+    renderHarness();
+    expect(screen.getByRole('treegrid', { name: 'Places' })).toHaveAttribute(
+      'aria-readonly',
+      'true',
+    );
+  });
+
   it('has a header row with a visually empty first header and one header per column', () => {
     renderHarness();
     const headers = within(grid()).getAllByRole('columnheader');
