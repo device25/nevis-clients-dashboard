@@ -327,7 +327,7 @@ describe('the loaded dashboard', () => {
     await expectNoAxeViolations(container);
   });
 
-  it('has no axe violations at Anna Blackwood scope with the table fully expanded', async () => {
+  it('has no axe violations at Anna Blackwood scope with Branch 1 expanded', async () => {
     const user = userEvent.setup();
     const { container } = await renderLoaded();
 
@@ -335,5 +335,72 @@ describe('the loaded dashboard', () => {
     await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown} ');
 
     await expectNoAxeViolations(container);
+  });
+
+  describe('with Branch 1 and Anna Blackwood expanded and Anna selected', () => {
+    async function renderExpanded() {
+      const user = userEvent.setup();
+      const view = await renderLoaded();
+      row('Company').focus();
+      await user.keyboard('{ArrowDown}{ArrowRight}{ArrowDown}{ArrowRight} ');
+      return view;
+    }
+
+    it('gives every one of the 12 rows its level, set size and position', async () => {
+      await renderExpanded();
+
+      const rows = screen
+        .getAllByRole('row')
+        .filter((r) => r.getAttribute('aria-label') !== null);
+
+      expect(
+        rows.map((r) => [
+          r.getAttribute('aria-label'),
+          r.getAttribute('aria-level'),
+          r.getAttribute('aria-setsize'),
+          r.getAttribute('aria-posinset'),
+        ]),
+      ).toEqual([
+        ['Company', '1', '1', '1'],
+        ['Branch 1', '2', '3', '1'],
+        ['Anna Blackwood', '3', '5', '1'],
+        ['Existing clients', '4', '3', '1'],
+        ['New organic', '4', '3', '2'],
+        ['New paid', '4', '3', '3'],
+        ['James Walker', '3', '5', '2'],
+        ['Maria Gutierrez', '3', '5', '3'],
+        ['Robert Chen', '3', '5', '4'],
+        ['Sarah Smith', '3', '5', '5'],
+        ['Branch 2', '2', '3', '2'],
+        ['Branch 3', '2', '3', '3'],
+      ]);
+    });
+
+    it('marks the three parents expanded and none of the nine leaves', async () => {
+      await renderExpanded();
+
+      for (const name of ['Company', 'Branch 1', 'Anna Blackwood']) {
+        expect(row(name)).toHaveAttribute('aria-expanded', 'true');
+      }
+      for (const name of [
+        'Branch 2',
+        'Branch 3',
+        'James Walker',
+        'Maria Gutierrez',
+        'Robert Chen',
+        'Sarah Smith',
+        'Existing clients',
+        'New organic',
+        'New paid',
+      ]) {
+        expect(row(name)).not.toHaveAttribute('aria-expanded');
+      }
+    });
+
+    it('has no axe violations', async () => {
+      const { container } = await renderExpanded();
+
+      await expectNoAxeViolations(container);
+    });
   });
 });
