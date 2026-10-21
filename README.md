@@ -26,8 +26,8 @@ pnpm build && pnpm start                # production build, served at http://loc
   it does not run on Windows as written.
 - **`pnpm verify:compiler`**, run after `pnpm build`, fails unless the bundle
   contains React Compiler output.
-- **CI:** `.github/workflows/ci.yml` runs all of this on a clean install. It
-  has not run yet, because nothing has been pushed.
+- **CI:** `.github/workflows/ci.yml` runs all of this on a clean install, on
+  every push and pull request, and passes on `main`.
 
 The API reads three switches. `API_DELAY_MS` and `API_FAIL` work under both
 `pnpm dev` and `pnpm start`. `PORT` is for `pnpm start` only, because the dev
@@ -311,7 +311,6 @@ How the checks changed the code:
 ## What I would do next
 
 - Run the manual screen-reader pass listed above, and fix what it finds.
-- Push the repository and let CI run on a clean machine for the first time.
 - Ask for the reporting period and a reconciled payload from the API, and
   agree which total wins.
 - Measure axis label widths in the browser instead of estimating them, so
