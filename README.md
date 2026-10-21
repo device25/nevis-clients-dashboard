@@ -305,8 +305,18 @@ How the checks changed the code:
     hierarchy;
   - a test that spied on `fetch` instead of using MSW.
 
-> **[Owner: add your own account here of how you worked with AI, what you
-> changed or rejected, and what you would do differently.]**
+I designed the system and let agents build it. I described the high-level
+parts, where the boundaries between packages run and what each layer is
+responsible for, and named the standards the accessibility had to follow:
+WAI-ARIA 1.2 and the ARIA Authoring Practices Guide. I then had Claude turn
+that into the specifications in `docs/` and a prompt for the orchestrator,
+which ran the build and checked the subagents' work. During the build I
+answered the questions the orchestrator could not settle from the documents.
+
+Before the build I checked `docs/DESIGN.md` against Figma in Dev Mode,
+decided what the chart shows (D3), and cut parts of the first plan: several
+agents, selecting a series through the legend, a bundle-size budget and a
+deployment.
 
 ## What I would do next
 
@@ -320,4 +330,5 @@ How the checks changed the code:
 
 ## Time spent
 
-> **[Owner: add the time spent, including the analysis before the build.]**
+About 2 hours planning the system and writing the specifications, and about
+4 hours of build and checks.
