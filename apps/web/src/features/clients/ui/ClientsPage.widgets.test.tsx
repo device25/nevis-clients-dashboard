@@ -64,11 +64,15 @@ describe('a widget that fails to render', () => {
     const chart = await screen.findByRole('region', { name: 'Chart' });
     const alert = within(chart).getByRole('alert');
     expect(alert).toHaveTextContent('The chart could not be displayed');
-    expect(
-      within(chart).getByRole('heading', {
-        name: 'The chart could not be displayed',
-      }),
-    ).toHaveFocus();
+    // The region can appear before React runs the effect that moves focus,
+    // which a slow CI runner showed.
+    await waitFor(() => {
+      expect(
+        within(chart).getByRole('heading', {
+          name: 'The chart could not be displayed',
+        }),
+      ).toHaveFocus();
+    });
 
     await user.click(screen.getByRole('row', { name: 'Branch 1' }));
     expect(screen.getByRole('row', { name: 'Branch 1' })).toHaveAttribute(
